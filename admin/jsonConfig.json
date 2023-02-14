@@ -1,0 +1,44 @@
+{
+  "i18n": true,
+  "type": "panel",
+  "items": {
+    "username": {
+      "type": "text",
+      "label": {
+        "en": "Camera username",
+        "de": "Kamera Benutzername",
+        "ru": "Имя пользователя камеры",
+        "pt": "Nome de usuário da câmera",
+        "nl": "Camera gebruikersnaam",
+        "fr": "Nom d ' utilisateur de la caméra",
+        "it": "Nome della macchina",
+        "es": "Nombre de usuario de la cámara",
+        "pl": "Nazwisko Camera",
+        "uk": "Ім'я користувача камери",
+        "zh-cn": "Camera用户"
+      },
+      "newLine": true,
+      "sm": 3
+    },
+    "password": {
+      "type": "password",
+      "newLine": true,
+      "repeat": false,
+      "visible": true,
+      "sm": 3,
+      "label": {
+        "en": "Camera password",
+        "de": "Kamera Passwort",
+        "ru": "Пароль камеры",
+        "pt": "Senha da câmera",
+        "nl": "Camera wachtwoord",
+        "fr": "Mot de passe caméra",
+        "it": "Password della macchina",
+        "es": "Contraseña de cámara",
+        "pl": "Camera password",
+        "uk": "Пароль камери",
+        "zh-cn": "Camera密码"
+      }
+    }
+  }
+}
