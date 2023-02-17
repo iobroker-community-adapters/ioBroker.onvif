@@ -2,6 +2,17 @@
   "i18n": true,
   "type": "panel",
   "items": {
+    "_manualDiscoverHint": {
+      "type": "staticText",
+      "newLine": true,
+      "sm": 12,
+      "text": "Enter Username and Password of onvif user of the camera. \nDiscovery happens automatically at adapter start or after settings save.",
+      "style": {
+        "paddingTop": 50,
+        "fontWeight": "bold",
+        "font-size": "1.3rem"
+      }
+    },
     "username": {
       "type": "text",
       "label": {
@@ -49,6 +60,7 @@
       "error": {
         "connect timeout": "Connection timeout"
       },
+      "jsonData": "{\"username\":\"${data.username}\",\"password\":\"${data.password}\"}",
       "icon": "search",
       "showProcessing": true,
       "command": "discover",
@@ -59,6 +71,17 @@
       "type": "panel",
       "label": "Manual Camera Search",
       "items": {
+        "_manualSearchHint": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": "If discover does not work, you can try to search for cameras manually.",
+          "style": {
+            "paddingTop": 50,
+            "fontWeight": "bold",
+            "font-size": "1.3rem"
+          }
+        },
         "startIp": {
           "type": "text",
           "sm": 12,
@@ -85,6 +108,7 @@
         },
         "_manualDiscover": {
           "newLine": true,
+
           "variant": "contained",
           "color": "primary",
           "disabled": "!_alive",
@@ -96,7 +120,10 @@
           "icon": "search",
           "showProcessing": true,
           "command": "manualSearch",
-          "label": "Start Camera Search"
+          "label": "Start Camera Search",
+          "result": {
+            "ok": "See log output for results"
+          }
         }
       }
     }

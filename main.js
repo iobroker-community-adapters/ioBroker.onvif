@@ -29,6 +29,7 @@ class Onvif extends utils.Adapter {
     this.on("message", this.onMessage.bind(this));
     this.deviceArray = [];
     this.devices = {};
+    this.discoveredDevices = [];
     this.json2iob = new Json2iob(this);
   }
 
@@ -61,7 +62,9 @@ class Onvif extends utils.Adapter {
         })
         .catch(async (err) => {
           this.log.error(`Error initializing device: ${err} device: ${JSON.stringify(device.native)}`);
-          this.log.error(`You can change user and password under object and edit device or delete device under objects and restart adapter`);
+          this.log.error(
+            `You can change user and password under object and edit device or delete device under objects and restart adapter`,
+          );
           this.log.error(err.stack);
           return null;
         });
@@ -122,7 +125,9 @@ class Onvif extends utils.Adapter {
         if (err) {
           return;
         }
-        const urn = result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["EndpointReference"][0]["Address"][0].payload;
+        const urn =
+          result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["EndpointReference"][0]["Address"][0]
+            .payload;
         const xaddrs = result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["XAddrs"][0].payload;
         let scopes = result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["Scopes"][0].payload;
         scopes = scopes.split(" ");
@@ -159,15 +164,20 @@ class Onvif extends utils.Adapter {
           this.log.error("Error parsing scopes: " + error);
           this.log.error(error.stack);
         }
-        this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
+        this.discoveredDevices.push(scopeObject.name + "_" + rinfo.address);
+        this.log.info(
+          `Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`,
+        );
         if (this.devices[rinfo.address]) {
           this.log.info(
-            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`
+            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`,
           );
           return;
         }
 
-        this.log.info(`Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password);
+        this.log.info(
+          `Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password,
+        );
         await this.initDevice({
           ip: rinfo.address,
           port: cam.port,
@@ -181,7 +191,13 @@ class Onvif extends utils.Adapter {
             cam.on("event", this.processEvent.bind(this, { native: native }));
           })
           .catch((err) => {
-            this.log.error(`Failed to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password);
+            this.log.error(
+              `Failed to login to ${rinfo.address}:${cam.port}` +
+                " with " +
+                this.config.username +
+                ":" +
+                this.config.password,
+            );
             this.log.error("Error " + err);
             this.log.error(err.stack);
           });
@@ -414,7 +430,7 @@ class Onvif extends utils.Adapter {
           }
           // @ts-ignore
           resolve(this);
-        }
+        },
       );
     });
   }
@@ -438,7 +454,7 @@ class Onvif extends utils.Adapter {
           })
             .then((response) => {
               if (response.status >= 400) {
-                this.log.error("Error getting snapshot via digest: " + e);
+                this.log.error("Error getting snapshot via digest: " + response);
                 return;
               }
               return Buffer.from(response.data).toString("base64");
@@ -448,7 +464,7 @@ class Onvif extends utils.Adapter {
             });
         }
         if (response.status >= 400) {
-          this.log.error("Error getting snapshot basic: " + e);
+          this.log.error("Error getting snapshot basic: " + response);
           return;
         }
         return Buffer.from(response.data).toString("base64");
@@ -463,23 +479,30 @@ class Onvif extends utils.Adapter {
     try {
       const ipRange = this.generateRange(options.startIp, options.endIp);
       const devices = [];
-      const portArray = options.ports.replace(/\s/g, "").split(",");
+      const portArray = options.port.replace(/\s/g, "").split(",");
       for (const ip of ipRange) {
         for (const port of portArray) {
-          const cam = await this.initDevice({ ip: ip, port: port, username: options.username, password: options.password })
+          const deviceName = await this.initDevice({
+            ip: ip,
+            port: port,
+            username: options.username,
+            password: options.password,
+          })
             .then(async (cam) => {
               this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
-              const native = await this.fetchCameraInfos(cam, rinfo);
+              const native = await this.fetchCameraInfos(cam, { address: cam.ip });
               this.devices[cam.hostname] = cam;
               cam.on("event", this.processEvent.bind(this, { native: native }));
+              return native.name;
             })
             .catch((err) => {
-              this.log.error(`Failed to login to ${rinfo.address}:${cam.port}` + " with " + options.username + ":" + options.password);
-              this.log.error("Error " + err);
-              this.log.error(err.stack);
+              this.log.error(`Failed to login to ${ip}:${port}` + " with " + options.username + ":" + options.password);
+              this.log.debug("Error " + err);
+              this.log.debug(err.stack);
+              return;
             });
 
-          devices.push(device);
+          deviceName && devices.push(deviceName);
         }
       }
       return devices;
@@ -543,17 +566,46 @@ class Onvif extends utils.Adapter {
       }
       if (obj.command === "discover") {
         this.log.debug(`discover for ${obj.message}`);
+        this.config.username = obj.message.username;
+        this.config.password = obj.message.password;
+        this.discoveredDevices = [];
         this.log.info("Starting discovery");
         await promisify(Discovery.probe)().catch((err) => {
           this.log.error("Error during discovery: " + err);
+          this.sendTo(obj.from, obj.command, { error: `Discovery failed` }, obj.callback);
+          return;
         });
         this.log.info("Discovery finished");
+        this.log.info(
+          `Found ${this.discoveredDevices.length} cameras: ${JSON.stringify(this.discoveredDevices, null, 2)}`,
+        );
+        obj.callback &&
+          this.sendTo(
+            obj.from,
+            obj.command,
+            {
+              result: `Found ${this.discoveredDevices.length} cameras: ${JSON.stringify(
+                this.discoveredDevices,
+                null,
+                2,
+              )}. See log for details`,
+            },
+            obj.callback,
+          );
       }
       if (obj.command === "manualSearch") {
         this.log.debug(`manualSearch for ${JSON.stringify(obj.message)}`);
         this.log.info("Starting manual search");
-        await this.manualSearch(obj.message);
+        const deviceArray = (await this.manualSearch(obj.message)) || [];
         this.log.info("Manual search finished");
+        this.log.info("Found devices: " + deviceArray);
+        obj.callback &&
+          this.sendTo(
+            obj.from,
+            obj.command,
+            { result: `Found ${deviceArray.length} cameras: ${JSON.stringify(deviceArray, null, 2)}` },
+            obj.callback,
+          );
       }
       if (obj.command === "getSnapshot") {
         this.log.debug(`getSnapshot for ${obj.message}`);
