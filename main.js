@@ -56,15 +56,27 @@ class Onvif extends utils.Adapter {
         password: device.native.password,
       })
         .then(async (cam) => {
-          this.log.info("Device initialized: " + cam.hostname + ":" + cam.port);
+          this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
           return cam;
         })
         .catch(async (err) => {
           this.log.error(`Error initializing device: ${err} device: ${JSON.stringify(device.native)}`);
+          this.log.error(`You can change user and password under object and edit device or delete device and restart adapter`);
           this.log.error(err.stack);
           return null;
         });
       if (camObj) {
+        this.devices[camObj.hostname] = camObj;
+        this.devices[camObj.hostname].lastMotionValue = false;
+        await this.setObjectNotExistsAsync(device.native.id + ".events", {
+          type: "channel",
+          common: {
+            name: "Camera Events",
+          },
+          native: {},
+        });
+        camObj.on("event", this.processEvent.bind(this, device));
+
         this.devices[camObj.hostname] = camObj;
       }
     }
@@ -72,6 +84,25 @@ class Onvif extends utils.Adapter {
     this.log.info("Start onvif discovery");
     await this.discovery();
     this.log.info("Finished onvif discovery");
+  }
+  async processEvent(device, event) {
+    this.log.debug(`Received event: ${JSON.stringify(event)}`);
+    const name = event.topic._.split(":")[1];
+    let value = event.message.message.data.simpleItem.$.Value;
+    if (typeof value === "object") {
+      value = JSON.stringify(value);
+    }
+    await this.setObjectNotExistsAsync(device.native.id + ".events." + name, {
+      type: "state",
+
+      common: {
+        name: name,
+        type: "mixed",
+        role: "indicator",
+      },
+      native: {},
+    });
+    await this.setStateAsync(device.native.id + ".events." + name, value, true);
   }
   async discovery() {
     Discovery.on("device", (cam, rinfo, xml) => {
@@ -130,125 +161,198 @@ class Onvif extends utils.Adapter {
         }
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
         if (this.devices[rinfo.address]) {
-          this.log.info(`Skip device ${rinfo.address} because it is already configured via iob object`);
+          this.log.info(
+            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`
+          );
           return;
         }
-        if (scopeObject.name === "Dahua") {
-          this.log.info(`Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password);
-          await this.initDevice({ ip: rinfo.address, port: cam.port, username: this.config.username, password: this.config.password })
-            .then(async (cam) => {
-              this.log.info("Dahua device found");
-              //  this.log.debug(JSON.stringify(cam, null, 2));
-              const timeDate = await promisify(cam.getSystemDateAndTime).bind(cam)();
 
-              const deviceInformation = await promisify(cam.getDeviceInformation).bind(cam)();
-              const deviceProfiles = await promisify(cam.getProfiles).bind(cam)();
-              const deviceCapabilities = await promisify(cam.getCapabilities).bind(cam)();
-              const deviceServices = await promisify(cam.getServices).bind(cam)(true);
-              const deviceServicesCapabilities = await promisify(cam.getServiceCapabilities).bind(cam)();
-              const scopes = await promisify(cam.getScopes).bind(cam)();
-              const videoSources = await promisify(cam.getVideoSources).bind(cam)();
-              const status = await promisify(cam.getStatus).bind(cam)();
-              let snapshotUrl;
-              const streamUris = {};
-              for (const profile of deviceProfiles) {
-                streamUris[profile.name] = {};
-                streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri).bind(cam)({ ProfileToken: profile.$.token });
-                if (!snapshotUrl) {
-                  snapshotUrl = streamUris[profile.name].snapshotUrl.uri;
-                }
-                streamUris[profile.name].live_stream_tcp = await promisify(cam.getStreamUri).bind(cam)({
+        this.log.info(`Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password);
+        await this.initDevice({ ip: rinfo.address, port: cam.port, username: this.config.username, password: this.config.password })
+          .then(async (cam) => {
+            this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
+
+            const timeDate = await promisify(cam.getSystemDateAndTime)
+              .bind(cam)()
+              .catch((e) => {
+                this.log.error(e);
+              });
+            const deviceInformation = await promisify(cam.getDeviceInformation)
+              .bind(cam)()
+              .catch((e) => {
+                this.log.error(e);
+              });
+            const deviceProfiles = await promisify(cam.getProfiles)
+              .bind(cam)()
+              .catch((e) => {
+                this.log.error(e);
+              });
+            const deviceCapabilities = await promisify(cam.getCapabilities)
+              .bind(cam)()
+              .catch((e) => {
+                this.log.error(e);
+              });
+            const deviceServices = await promisify(cam.getServices)
+              .bind(cam)(true)
+              .catch((e) => {
+                this.log.error(e);
+              });
+            const deviceServicesCapabilities = await promisify(cam.getServiceCapabilities)
+              .bind(cam)()
+              .catch((e) => {
+                this.log.error(e);
+              });
+            const scopes = await promisify(cam.getScopes)
+              .bind(cam)()
+              .catch((e) => {
+                this.log.error(e);
+              });
+            const videoSources = await promisify(cam.getVideoSources)
+              .bind(cam)()
+              .catch((e) => {
+                this.log.error(e);
+              });
+            const status = await promisify(cam.getStatus)
+              .bind(cam)()
+              .catch((e) => {
+                this.log.error(e);
+              });
+            let snapshotUrl;
+            const streamUris = {};
+            for (const profile of deviceProfiles) {
+              streamUris[profile.name] = {};
+              streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
+                .bind(cam)({ ProfileToken: profile.$.token })
+                .catch((e) => {
+                  this.log.error("Error getting snapshot url: " + e);
+                });
+              if (!snapshotUrl && streamUris[profile.name].snapshotUrl) {
+                snapshotUrl = streamUris[profile.name].snapshotUrl.uri;
+              }
+              streamUris[profile.name].live_stream_tcp = await promisify(cam.getStreamUri)
+                .bind(cam)({
                   protocol: "RTSP",
                   stream: "RTP-Unicast",
                   ProfileToken: profile.$.token,
+                })
+                .catch((e) => {
+                  this.log.error("Error getting live stream tcp url: " + e);
                 });
-                streamUris[profile.name].live_stream_udp = await promisify(cam.getStreamUri).bind(cam)({
+              streamUris[profile.name].live_stream_udp = await promisify(cam.getStreamUri)
+                .bind(cam)({
                   protocol: "UDP",
                   stream: "RTP-Unicast",
                   ProfileToken: profile.$.token,
+                })
+                .catch((e) => {
+                  this.log.error("Error getting live stream udp url: " + e);
                 });
-                streamUris[profile.name].live_stream_multicast = await promisify(cam.getStreamUri).bind(cam)({
+              streamUris[profile.name].live_stream_multicast = await promisify(cam.getStreamUri)
+                .bind(cam)({
                   protocol: "UDP",
                   stream: "RTP-Multicast",
                   ProfileToken: profile.$.token,
+                })
+                .catch((e) => {
+                  this.log.error("Error getting live stream multicast url: " + e);
                 });
-                streamUris[profile.name].http_stream = await promisify(cam.getStreamUri).bind(cam)({
+              streamUris[profile.name].http_stream = await promisify(cam.getStreamUri)
+                .bind(cam)({
                   protocol: "HTTP",
                   stream: "RTP-Unicast",
                   ProfileToken: profile.$.token,
+                })
+                .catch((e) => {
+                  this.log.error("Error getting http stream url: " + e);
                 });
-              }
+            }
 
-              const id = `${cam.hostname}_${cam.port}`.replace(/\./g, "_");
-              let name = deviceInformation.manufacturer || "";
-              name += " " + deviceInformation.model || "";
-              name += " " + cam.hostname + ":" + cam.port;
+            const id = `${cam.hostname}_${cam.port}`.replace(/\./g, "_");
+            let name = deviceInformation.manufacturer || "";
+            name += " " + deviceInformation.model || "";
+            name += " " + cam.hostname + ":" + cam.port;
 
-              const native = {
-                id: id,
+            const native = {
+              id: id,
+              name: name,
+              ip: rinfo.address,
+              port: cam.port,
+              user: cam.username,
+              password: cam.password,
+              snapshotUrl: snapshotUrl,
+            };
+            await this.setObjectNotExistsAsync(id + ".events", {
+              type: "channel",
+              common: {
+                name: "Camera Events",
+              },
+              native: {},
+            });
+            await this.extendObjectAsync(id, {
+              type: "device",
+              common: {
                 name: name,
-                ip: rinfo.address,
-                port: cam.port,
-                user: cam.username,
-                password: cam.password,
-                snapshotUrl: snapshotUrl,
-              };
+              },
+              native: native,
+            });
+            await this.setObjectNotExistsAsync(id + ".remote", {
+              type: "channel",
+              common: {
+                name: "Remote Controls",
+              },
+              native: {},
+            });
+            await this.setObjectNotExistsAsync(id + ".infos", {
+              type: "channel",
+              common: {
+                name: "Infos via ONVIF",
+              },
+              native: {},
+            });
 
-              await this.extendObjectAsync(id, {
-                type: "device",
+            cam.on("event", this.processEvent.bind(this, { native: native }));
+            this.devices[cam.hostname] = cam;
+
+            const remoteArray = [
+              { command: "Refresh", name: "True = Refresh" },
+              { command: "snapshot", name: "True = Switch On, False = Switch Off" },
+            ];
+            remoteArray.forEach((remote) => {
+              this.setObjectNotExists(id + ".remote." + remote.command, {
+                type: "state",
                 common: {
-                  name: name,
-                },
-                native: native,
-              });
-              await this.setObjectNotExistsAsync(id + ".remote", {
-                type: "channel",
-                common: {
-                  name: "Remote Controls",
+                  name: remote.name || "",
+                  type: remote.type || "boolean",
+                  role: remote.role || "button",
+                  def: remote.def != null ? remote.def : false,
+                  write: true,
+                  read: true,
                 },
                 native: {},
               });
-
-              const remoteArray = [
-                { command: "Refresh", name: "True = Refresh" },
-                { command: "snapshot", name: "True = Switch On, False = Switch Off" },
-              ];
-              remoteArray.forEach((remote) => {
-                this.setObjectNotExists(id + ".remote." + remote.command, {
-                  type: "state",
-                  common: {
-                    name: remote.name || "",
-                    type: remote.type || "boolean",
-                    role: remote.role || "button",
-                    def: remote.def != null ? remote.def : false,
-                    write: true,
-                    read: true,
-                  },
-                  native: {},
-                });
-              });
-              this.json2iob.parse(id + ".general", cam, { forceIndex: true, removePasswords: true });
-
-              this.json2iob.parse(id + ".timeDate", timeDate, { forceIndex: true, channelName: "Time Date" });
-              this.json2iob.parse(id + ".deviceInformation", deviceInformation, { forceIndex: true, channelName: "Device Information" });
-              this.json2iob.parse(id + ".deviceProfiles", deviceProfiles, { forceIndex: true, channelName: "Device Profiles" });
-              this.json2iob.parse(id + ".deviceCapabilities", deviceCapabilities, { forceIndex: true, channelName: "Device Capabilities" });
-              this.json2iob.parse(id + ".deviceServices", deviceServices, { forceIndex: true, channelName: "Device Services" });
-              this.json2iob.parse(id + ".deviceServicesCapabilities", deviceServicesCapabilities, {
-                forceIndex: true,
-                channelName: "Device Services Capabilities",
-              });
-              this.json2iob.parse(id + ".scopes", scopes, { forceIndex: true, channelName: "Scopes" });
-              this.json2iob.parse(id + ".videoSources", videoSources, { forceIndex: true, channelName: "Video Sources" });
-              this.json2iob.parse(id + ".status", status, { forceIndex: true, channelName: "Status" });
-              this.json2iob.parse(id + ".streamUris", streamUris, { forceIndex: true, channelName: "Stream Uris" });
-            })
-            .catch((err) => {
-              this.log.error(`Failed to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password);
-              this.log.error("Erro " + err);
-              this.log.error(err.stack);
             });
-        }
+
+            this.json2iob.parse(id + ".general", cam, { forceIndex: true, removePasswords: true, channelName: "General Information" });
+            this.json2iob.parse(id + ".infos.timeDate", timeDate, { forceIndex: true, channelName: "Time Date" });
+            this.json2iob.parse(id + ".infos.deviceInformation", deviceInformation, { forceIndex: true, channelName: "Device Information" });
+            this.json2iob.parse(id + ".infos.deviceProfiles", deviceProfiles, { forceIndex: true, channelName: "Device Profiles" });
+            this.json2iob.parse(id + ".infos.deviceCapabilities", deviceCapabilities, { forceIndex: true, channelName: "Device Capabilities" });
+            this.json2iob.parse(id + ".infos.deviceServices", deviceServices, { forceIndex: true, channelName: "Device Services" });
+            this.json2iob.parse(id + ".infos.deviceServicesCapabilities", deviceServicesCapabilities, {
+              forceIndex: true,
+              channelName: "Device Services Capabilities",
+            });
+            this.json2iob.parse(id + ".infos.scopes", scopes, { forceIndex: true, channelName: "Scopes" });
+            this.json2iob.parse(id + ".infos.videoSources", videoSources, { forceIndex: true, channelName: "Video Sources" });
+            this.json2iob.parse(id + ".infos.status", status, { forceIndex: true, channelName: "Status" });
+            this.json2iob.parse(id + ".infos.streamUris", streamUris, { forceIndex: true, channelName: "Stream Uris" });
+          })
+          .catch((err) => {
+            this.log.error(`Failed to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password);
+            this.log.error("Erro " + err);
+            this.log.error(err.stack);
+          });
+
         this.log.debug(JSON.stringify(scopeObject));
       });
     });
