@@ -76,11 +76,10 @@
       }
     ]
   },
-  "encryptedNative": ["password"],
   "protectedNative": ["password"],
   "native": {
     "username": "admin",
-    "password": ""
+    "password": "admin"
   },
   "objects": [],
   "instanceObjects": [

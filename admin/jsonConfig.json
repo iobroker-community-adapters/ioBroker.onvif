@@ -39,6 +39,66 @@
         "uk": "Пароль камери",
         "zh-cn": "Camera密码"
       }
+    },
+    "_discover": {
+      "newLine": true,
+      "variant": "contained",
+      "color": "primary",
+      "disabled": "!_alive",
+      "type": "sendTo",
+      "error": {
+        "connect timeout": "Connection timeout"
+      },
+      "icon": "search",
+      "showProcessing": true,
+      "command": "discover",
+      "label": "Start Camera Discovery"
+    },
+    "_manual": {
+      "newLine": true,
+      "type": "panel",
+      "label": "Manual Camera Search",
+      "items": {
+        "startIp": {
+          "type": "text",
+          "sm": 12,
+          "md": 6,
+          "lg": 4,
+          "label": "Start Ip",
+          "default": "192.168.178.1"
+        },
+        "endIp": {
+          "type": "text",
+          "sm": 12,
+          "md": 6,
+          "lg": 4,
+          "label": "End Ip",
+          "default": "192.168.178.255"
+        },
+        "port": {
+          "type": "text",
+          "sm": 12,
+          "md": 6,
+          "lg": 4,
+          "label": "Port",
+          "default": "80, 7575, 8000, 8080, 8081, 8899"
+        },
+        "_manualDiscover": {
+          "newLine": true,
+          "variant": "contained",
+          "color": "primary",
+          "disabled": "!_alive",
+          "type": "sendTo",
+          "error": {
+            "connect timeout": "Connection timeout"
+          },
+          "jsonData": "{\"startIp\":\"${data.startIp}\",\"endIp\":\"${data.endIp}\",\"port\":\"${data.port}\",\"username\":\"${data.username}\",\"password\":\"${data.password}\"}",
+          "icon": "search",
+          "showProcessing": true,
+          "command": "manualSearch",
+          "label": "Start Camera Search"
+        }
+      }
     }
   }
 }

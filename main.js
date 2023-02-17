@@ -26,6 +26,7 @@ class Onvif extends utils.Adapter {
     this.on("ready", this.onReady.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
     this.on("unload", this.onUnload.bind(this));
+    this.on("message", this.onMessage.bind(this));
     this.deviceArray = [];
     this.devices = {};
     this.json2iob = new Json2iob(this);
@@ -60,9 +61,7 @@ class Onvif extends utils.Adapter {
         })
         .catch(async (err) => {
           this.log.error(`Error initializing device: ${err} device: ${JSON.stringify(device.native)}`);
-          this.log.error(
-            `You can change user and password under object and edit device or delete device under objects and restart adapter`,
-          );
+          this.log.error(`You can change user and password under object and edit device or delete device under objects and restart adapter`);
           this.log.error(err.stack);
           return null;
         });
@@ -123,9 +122,7 @@ class Onvif extends utils.Adapter {
         if (err) {
           return;
         }
-        const urn =
-          result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["EndpointReference"][0]["Address"][0]
-            .payload;
+        const urn = result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["EndpointReference"][0]["Address"][0].payload;
         const xaddrs = result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["XAddrs"][0].payload;
         let scopes = result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["Scopes"][0].payload;
         scopes = scopes.split(" ");
@@ -162,19 +159,15 @@ class Onvif extends utils.Adapter {
           this.log.error("Error parsing scopes: " + error);
           this.log.error(error.stack);
         }
-        this.log.info(
-          `Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`,
-        );
+        this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
         if (this.devices[rinfo.address]) {
           this.log.info(
-            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`,
+            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`
           );
           return;
         }
 
-        this.log.info(
-          `Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password,
-        );
+        this.log.info(`Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password);
         await this.initDevice({
           ip: rinfo.address,
           port: cam.port,
@@ -188,14 +181,8 @@ class Onvif extends utils.Adapter {
             cam.on("event", this.processEvent.bind(this, { native: native }));
           })
           .catch((err) => {
-            this.log.error(
-              `Failed to login to ${rinfo.address}:${cam.port}` +
-                " with " +
-                this.config.username +
-                ":" +
-                this.config.password,
-            );
-            this.log.error("Erro " + err);
+            this.log.error(`Failed to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password);
+            this.log.error("Error " + err);
             this.log.error(err.stack);
           });
       });
@@ -262,6 +249,7 @@ class Onvif extends utils.Adapter {
       });
     let snapshotUrl;
     const streamUris = {};
+    //find image urls for each profile
     for (const profile of deviceProfiles) {
       streamUris[profile.name] = {};
       streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
@@ -325,19 +313,20 @@ class Onvif extends utils.Adapter {
       password: cam.password,
       snapshotUrl: snapshotUrl,
     };
-    await this.setObjectNotExistsAsync(id + ".events", {
-      type: "channel",
-      common: {
-        name: "Camera Events",
-      },
-      native: {},
-    });
+
     await this.extendObjectAsync(id, {
       type: "device",
       common: {
         name: name,
       },
       native: native,
+    });
+    await this.setObjectNotExistsAsync(id + ".events", {
+      type: "channel",
+      common: {
+        name: "Camera Events",
+      },
+      native: {},
     });
     await this.setObjectNotExistsAsync(id + ".remote", {
       type: "channel",
@@ -425,7 +414,7 @@ class Onvif extends utils.Adapter {
           }
           // @ts-ignore
           resolve(this);
-        },
+        }
       );
     });
   }
@@ -442,23 +431,24 @@ class Onvif extends utils.Adapter {
     })
       .then(async (response) => {
         if (response.status === 401) {
+          //if basic auth fails try digest auth
           return await request(snapshotUrl, {
             method: "GET",
             digestAuth: `${deviceObject.native.user}:${deviceObject.native.password}`,
           })
             .then((response) => {
               if (response.status >= 400) {
-                this.log.error("Error getting snapshot: " + response.status);
+                this.log.error("Error getting snapshot via digest: " + e);
                 return;
               }
               return Buffer.from(response.data).toString("base64");
             })
             .catch((e) => {
-              this.log.error("Error getting snapshot: " + e);
+              this.log.error("Error getting snapshot via basic: " + e);
             });
         }
         if (response.status >= 400) {
-          this.log.error("Error getting snapshot: " + response.status);
+          this.log.error("Error getting snapshot basic: " + e);
           return;
         }
         return Buffer.from(response.data).toString("base64");
@@ -469,6 +459,35 @@ class Onvif extends utils.Adapter {
     return response;
   }
 
+  async manualSearch(options) {
+    try {
+      const ipRange = this.generateRange(options.startIp, options.endIp);
+      const devices = [];
+      const portArray = options.ports.replace(/\s/g, "").split(",");
+      for (const ip of ipRange) {
+        for (const port of portArray) {
+          const cam = await this.initDevice({ ip: ip, port: port, username: options.username, password: options.password })
+            .then(async (cam) => {
+              this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
+              const native = await this.fetchCameraInfos(cam, rinfo);
+              this.devices[cam.hostname] = cam;
+              cam.on("event", this.processEvent.bind(this, { native: native }));
+            })
+            .catch((err) => {
+              this.log.error(`Failed to login to ${rinfo.address}:${cam.port}` + " with " + options.username + ":" + options.password);
+              this.log.error("Error " + err);
+              this.log.error(err.stack);
+            });
+
+          devices.push(device);
+        }
+      }
+      return devices;
+    } catch (e) {
+      this.log.error("Error searching for devices: " + e);
+      return;
+    }
+  }
   generateRange(startIp, endIp) {
     let startLong = this.toLong(startIp);
     let endLong = this.toLong(endIp);
@@ -514,6 +533,35 @@ class Onvif extends utils.Adapter {
       callback();
     } catch (e) {
       callback();
+    }
+  }
+  async onMessage(obj) {
+    if (typeof obj === "object" && obj.message) {
+      if (obj.command === "send") {
+        // e.g. send email or pushover or whatever
+        console.log("send command");
+      }
+      if (obj.command === "discover") {
+        this.log.debug(`discover for ${obj.message}`);
+        this.log.info("Starting discovery");
+        await promisify(Discovery.probe)().catch((err) => {
+          this.log.error("Error during discovery: " + err);
+        });
+        this.log.info("Discovery finished");
+      }
+      if (obj.command === "manualSearch") {
+        this.log.debug(`manualSearch for ${JSON.stringify(obj.message)}`);
+        this.log.info("Starting manual search");
+        await this.manualSearch(obj.message);
+        this.log.info("Manual search finished");
+      }
+      if (obj.command === "getSnapshot") {
+        this.log.debug(`getSnapshot for ${obj.message}`);
+        const snapshot = await this.getSnapshot(obj.message);
+        if (snapshot) {
+          this.sendTo(obj.from, obj.command, snapshot, obj.callback);
+        }
+      }
     }
   }
 
