@@ -8,6 +8,7 @@
 // you need to create an adapter
 const utils = require("@iobroker/adapter-core");
 const axios = require("axios").default;
+const { request } = require("urllib");
 const Json2iob = require("json2iob");
 const Cam = require("onvif").Cam;
 const xml2js = require("xml2js");
@@ -61,7 +62,7 @@ class Onvif extends utils.Adapter {
         })
         .catch(async (err) => {
           this.log.error(`Error initializing device: ${err} device: ${JSON.stringify(device.native)}`);
-          this.log.error(`You can change user and password under object and edit device or delete device and restart adapter`);
+          this.log.error(`You can change user and password under object and edit device or delete device under objects and restart adapter`);
           this.log.error(err.stack);
           return null;
         });
@@ -75,7 +76,6 @@ class Onvif extends utils.Adapter {
           native: {},
         });
         camObj.on("event", this.processEvent.bind(this, device));
-
         this.devices[camObj.hostname] = camObj;
       }
     }
@@ -170,7 +170,10 @@ class Onvif extends utils.Adapter {
         this.log.info(`Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password);
         await this.initDevice({ ip: rinfo.address, port: cam.port, username: this.config.username, password: this.config.password })
           .then(async (cam) => {
+            this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
             await this.fetchCameraInfos(cam, rinfo);
+            this.devices[cam.hostname] = cam;
+            cam.on("event", this.processEvent.bind(this, { native: native }));
           })
           .catch((err) => {
             this.log.error(`Failed to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password);
@@ -189,8 +192,6 @@ class Onvif extends utils.Adapter {
     });
   }
   async fetchCameraInfos(cam, rinfo) {
-    this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
-
     const timeDate = await promisify(cam.getSystemDateAndTime)
       .bind(cam)()
       .catch((e) => {
@@ -301,6 +302,7 @@ class Onvif extends utils.Adapter {
       name: name,
       ip: rinfo.address,
       port: cam.port,
+      hostname: cam.hostname,
       user: cam.username,
       password: cam.password,
       snapshotUrl: snapshotUrl,
@@ -333,9 +335,6 @@ class Onvif extends utils.Adapter {
       },
       native: {},
     });
-
-    cam.on("event", this.processEvent.bind(this, { native: native }));
-    this.devices[cam.hostname] = cam;
 
     const remoteArray = [
       { command: "Refresh", name: "True = Refresh" },
@@ -393,6 +392,46 @@ class Onvif extends utils.Adapter {
         }
       );
     });
+  }
+  async getSnapshot(id) {
+    const deviceObject = await this.getObjectAsync(id);
+    if (!deviceObject || !deviceObject.native || !deviceObject.native.snapshotUrl) {
+      this.log.warn("No snapshot url found for " + id);
+      return;
+    }
+    const snapshotUrl = deviceObject.native.snapshotUrl;
+    const response = await request(snapshotUrl, {
+      method: "GET",
+      auth: `${deviceObject.native.user}:${deviceObject.native.password}`,
+    })
+      .then(async (response) => {
+        if (response.status === 401) {
+          return await request(snapshotUrl, {
+            method: "GET",
+            rejectUnauthorized: false,
+            digestAuth: `${deviceObject.native.user}:${deviceObject.native.password}`,
+          })
+            .then((response) => {
+              if (response.status >= 400) {
+                this.log.error("Error getting snapshot: " + response.status);
+                return;
+              }
+              return Buffer.from(response.data).toString("base64");
+            })
+            .catch((e) => {
+              this.log.error("Error getting snapshot: " + e);
+            });
+        }
+        if (response.status >= 400) {
+          this.log.error("Error getting snapshot: " + response.status);
+          return;
+        }
+        return Buffer.from(response.data).toString("base64");
+      })
+      .catch((e) => {
+        this.log.error("Error getting snapshot: " + e);
+      });
+    return response;
   }
 
   generateRange(startIp, endIp) {
@@ -453,13 +492,52 @@ class Onvif extends utils.Adapter {
       if (!state.ack) {
         const deviceId = id.split(".")[2];
         let command = id.split(".")[4];
-        const type = command.split("-")[1];
-        command = command.split("-")[0];
-
-        if (id.split(".")[4] === "Refresh") {
-          //    this.updateDevices();
+        const deviceObject = await this.getObjectAsync(deviceId);
+        const cam = this.devices[deviceObject.native.ip];
+        if (command === "Refresh") {
+          this.fetchCameraInfos(cam, { address: deviceObject.native.ip });
           return;
         }
+        if (command === "snapshot") {
+          const snapshot = await this.getSnapshot(deviceId);
+          if (snapshot) {
+            await this.setObjectNotExistsAsync(deviceId + ".snapshot", {
+              type: "state",
+              common: {
+                name: "Snapshot",
+                type: "string",
+                role: "image",
+                read: true,
+                write: false,
+              },
+              native: {},
+            });
+            await this.setStateAsync(deviceId + ".snapshot", `data:image/jpg;base64,${snapshot}`, true);
+            this.log.info(`Snapshot saved in state ${deviceId}.snapshot`);
+          }
+          return;
+        }
+
+        if (command === "gotoPreset") {
+          await promisify(cam[command])
+            .bind(cam)({ preset: state.val })
+            .then((res) => {
+              this.log.info(`Result of command ${command} on device ${deviceId}: ${JSON.stringify(res)}`);
+            })
+            .catch((e) => {
+              this.log.error(`Error while executing command ${command} on device ${deviceId}: ${e}`);
+            });
+          return;
+        }
+
+        await promisify(cam[command])
+          .bind(cam)({})
+          .then((res) => {
+            this.log.info(`Result of command ${command} on device ${deviceId}: ${JSON.stringify(res)}`);
+          })
+          .catch((e) => {
+            this.log.error(`Error while executing command ${command} on device ${deviceId}: ${e}`);
+          });
       }
     }
   }
