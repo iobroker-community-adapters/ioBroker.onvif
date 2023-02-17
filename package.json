@@ -21,9 +21,9 @@
   },
   "dependencies": {
     "@iobroker/adapter-core": "^2.6.7",
-    "axios": "^1.3.3",
     "json2iob": "^2.3.3",
     "onvif": "^0.6.7",
+    "urllib": "^3.10.2",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
