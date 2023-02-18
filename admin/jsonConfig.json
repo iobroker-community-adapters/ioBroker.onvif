@@ -72,7 +72,7 @@
       "error": {
         "connect timeout": "Connection timeout"
       },
-      "jsonData": "{\"username\":\"${data.username}\",\"password\":\"${data.password}\"}",
+      "jsonData": "{\"user\":\"${data.user}\",\"password\":\"${data.password}\"}",
       "icon": "search",
       "showProcessing": true,
       "command": "discover",
@@ -164,7 +164,7 @@
           "error": {
             "connect timeout": "Connection timeout"
           },
-          "jsonData": "{\"startIp\":\"${data.startIp}\",\"endIp\":\"${data.endIp}\",\"port\":\"${data.port}\",\"username\":\"${data.username}\",\"password\":\"${data.password}\"}",
+          "jsonData": "{\"startIp\":\"${data.startIp}\",\"endIp\":\"${data.endIp}\",\"port\":\"${data.port}\",\"user\":\"${data.user}\",\"password\":\"${data.password}\"}",
           "icon": "search",
           "showProcessing": true,
           "command": "manualSearch",

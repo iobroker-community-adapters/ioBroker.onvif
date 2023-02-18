@@ -486,7 +486,7 @@ class Onvif extends utils.Adapter {
           const deviceName = await this.initDevice({
             ip: ip,
             port: port,
-            username: options.username,
+            username: options.user,
             password: options.password,
           })
             .then(async (cam) => {
@@ -497,7 +497,7 @@ class Onvif extends utils.Adapter {
               return native.name;
             })
             .catch((err) => {
-              this.log.error(`Failed to login to ${ip}:${port}` + " with " + options.username + ":" + options.password);
+              this.log.error(`Failed to login to ${ip}:${port}` + " with " + options.user + ":" + options.password);
               this.log.info("Error " + err);
               this.log.debug(err.stack);
               return;
@@ -589,7 +589,7 @@ class Onvif extends utils.Adapter {
       }
       if (obj.command === "discover") {
         this.log.debug(`discover for ${obj.message}`);
-        this.config.user = obj.message.username;
+        this.config.user = obj.message.user;
         this.config.password = obj.message.password;
         this.discoveredDevices = [];
         this.log.info("Starting discovery");
