@@ -8,7 +8,7 @@
       "sm": 12,
       "text": {
         "en": "Enter Username and Password of onvif user of the camera. \nDiscovery happens automatically at adapter start or after settings save. Delete the camera under objects to rediscover",
-        "de": "Geben Sie Benutzername und Passwort des Benutzers der Onvif-Kamera ein. \nKamerasuche geschieht automatisch bei Adapterstart oder nach Einstellungen speichern. Löschen Sie die Kamera unter Objekten, um sie erneut zu finden.",
+        "de": "Geben Sie Benutzername und Passwort des Benutzers der Onvif-Kamera für den Suchvorgang ein. Bei unterschiedlichen Passwörter, mehrere Suchvorgänge starten. Das Passwort wird pro Kamera gespeichert. \nKamerasuche geschieht automatisch bei Adapterstart oder nach Einstellungen speichern. Löschen Sie die Kamera unter Objekten, um sie erneut zu finden.",
         "ru": "Введите имя пользователя и пароль пользователя камеры. \nDiscovery происходит автоматически при запуске адаптера или после сохранения настроек. Удалить камеру под объектами для восстановления",
         "pt": "Digite o nome de usuário e senha do usuário onvif da câmera. \nDiscovery acontece automaticamente no início do adaptador ou após as configurações salvar. Excluir a câmera sob objetos para redescobrir",
         "nl": "Voer User naam en wachtwoord van onvif gebruiker van de camera. NDIScovery gebeurt automatisch bij adapter start of na de instellingen. Verwijder de camera onder objecten om te herontdekken",
