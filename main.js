@@ -86,6 +86,8 @@ class Onvif extends utils.Adapter {
     this.log.info("Start onvif discovery");
     await this.discovery();
     this.log.info("Finished onvif discovery");
+
+    this.setState("info.connection", true, true);
   }
   async processEvent(device, event) {
     this.log.debug(`Received event: ${JSON.stringify(event)}`);
