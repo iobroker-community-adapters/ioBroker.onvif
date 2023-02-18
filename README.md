@@ -15,6 +15,63 @@
 
 Adapter for onvif cameras
 
+## Kameras hinzufügen
+
+### Discovery:
+
+Bei jedem Adapterstart wird mit dem in der Einstellungen eingetragen Benutzername und Passwort eine Discovery durchgeführt und versuch sich in die Kamera einzuloggen. Falls die Kamera noch nicht unter Objekte hinzugefügt wurde.
+
+In den Einstellungen kann man die Discovery manuell ausführen. Falls die Kameras unterschiedliche Zugangsdaten haben müssen die jeweils eingegeben werden und eine discovery durchgeführt werden. Im Log sieht man Details zu dem Prozess.
+
+### Manuelle Suche
+
+Es können Kameras manuell gesucht werden, falls Discovery nicht funktioniert. Dazu muss eine IP Range und Ports eingegeben und manuell ausgeführt werden. Im Log sieht man Details zu dem Prozess.
+
+## Datenpunkte
+
+onvif.0.IP_PORT.events Events der Kamera wie z.b. Bewegungserkennung
+onvif.0.IP_PORT.general Generelle Information über die Kameras
+onvif.0.IP_PORT.infos Informationen über die Kamera werden nur bei Adapterstart aktualisiert oder bei remote.refresh
+onvif.0.IP_PORT.remote Steuerung der Kamera
+onvif.0.IP_PORT.remote.refresh Aktualisierung der Infodaten
+onvif.0.IP_PORT.remote.gotoHomePosition PTZ Kamera in die HomePosition setzen
+onvif.0.IP_PORT.remote.gotoPreset PTZ Kamera Preset Nummer auswählen
+onvif.0.IP_PORT.remote.snapshot Speichert ein snapshot unter onvif.0.IP_PORT.snapshot
+
+## Message
+
+Adapter nimmt Message "snapshot" entgegen und gibt ein Bild zurück
+
+```javascript
+sendTo("onvif.0", "snapshot", "192_168_178_100_80", (result) => {
+  if (result) {
+    sendTo("telegram.0", {
+      text: result,
+      type: "photo",
+      caption: "Kamera 2",
+    });
+  }
+});
+```
+
+## Bewegungsmeldung zu Telegram
+
+```javascript
+on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (obj) => {
+  if (obj.state.val === true) {
+    sendTo("onvif.0", "snapshot", "192_168_178_100_80", (result) => {
+      if (result) {
+        sendTo("telegram.0", {
+          text: result,
+          type: "photo",
+          caption: "Camera 2",
+        });
+      }
+    });
+  }
+});
+```
+
 ## Changelog
 
 <!--

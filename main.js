@@ -96,11 +96,11 @@ class Onvif extends utils.Adapter {
     if (typeof value === "object") {
       value = JSON.stringify(value);
     }
-    await this.setObjectNotExistsAsync(device.native.id + ".events." + id, {
+    await this.extendObjectAsync(device.native.id + ".events." + id, {
       type: "state",
       common: {
         name: name,
-        type: "mixed",
+        type: typeof value,
         role: "indicator",
         read: true,
         write: false,
@@ -643,6 +643,10 @@ class Onvif extends utils.Adapter {
     if (state) {
       if (!state.ack) {
         const deviceId = id.split(".")[2];
+        const folder = id.split(".")[3];
+        if (folder != "remote") {
+          return;
+        }
         const command = id.split(".")[4];
         const deviceObject = await this.getObjectAsync(deviceId);
         if (!deviceObject || !deviceObject.native || !deviceObject.native.ip) {
