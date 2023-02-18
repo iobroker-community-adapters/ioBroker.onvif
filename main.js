@@ -37,13 +37,7 @@ class Onvif extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
-    // Reset the connection indicator during startup
-    this.setState("info.connection", false, true);
-    const cleaned = await this.cleanOldVersion();
-    if (cleaned) {
-      this.restart();
-      return;
-    }
+    await this.cleanOldVersion();
 
     this.subscribeStates("*");
 
@@ -86,8 +80,6 @@ class Onvif extends utils.Adapter {
     this.log.info("Start onvif discovery");
     await this.discovery();
     this.log.info("Finished onvif discovery");
-
-    this.setState("info.connection", true, true);
   }
   async processEvent(device, event) {
     this.log.debug(`Received event: ${JSON.stringify(event)}`);
@@ -572,12 +564,6 @@ class Onvif extends utils.Adapter {
    */
   onUnload(callback) {
     try {
-      this.setState("info.connection", false, true);
-      // this.refreshTimeout && clearTimeout(this.refreshTimeout);
-      // this.reLoginTimeout && clearTimeout(this.reLoginTimeout);
-      // this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
-      // this.updateInterval && clearInterval(this.updateInterval);
-      // this.refreshTokenInterval && clearInterval(this.refreshTokenInterval);
       callback();
     } catch (e) {
       callback();
