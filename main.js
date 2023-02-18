@@ -177,12 +177,12 @@ class Onvif extends utils.Adapter {
         }
 
         this.log.info(
-          `Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.username + ":" + this.config.password,
+          `Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.config.password,
         );
         await this.initDevice({
           ip: rinfo.address,
           port: cam.port,
-          username: this.config.username,
+          username: this.config.user,
           password: this.config.password,
         })
           .then(async (cam) => {
@@ -195,7 +195,7 @@ class Onvif extends utils.Adapter {
             this.log.error(
               `Failed to login to ${rinfo.address}:${cam.port}` +
                 " with " +
-                this.config.username +
+                this.config.user +
                 ":" +
                 this.config.password,
             );
@@ -589,7 +589,7 @@ class Onvif extends utils.Adapter {
       }
       if (obj.command === "discover") {
         this.log.debug(`discover for ${obj.message}`);
-        this.config.username = obj.message.username;
+        this.config.user = obj.message.username;
         this.config.password = obj.message.password;
         this.discoveredDevices = [];
         this.log.info("Starting discovery");

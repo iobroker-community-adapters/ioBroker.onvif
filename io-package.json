@@ -78,7 +78,7 @@
   },
   "protectedNative": ["password"],
   "native": {
-    "username": "admin",
+    "user": "admin",
     "password": "admin"
   },
   "messages": [
