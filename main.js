@@ -57,7 +57,9 @@ class Onvif extends utils.Adapter {
         })
         .catch(async (err) => {
           this.log.error(`Error initializing device: ${err} device: ${JSON.stringify(device.native)}`);
-          this.log.error(`You can change user and password under object and edit device or delete device under objects and restart adapter`);
+          this.log.error(
+            `You can change user and password under object and edit device or delete device under objects and restart adapter`,
+          );
           this.log.error(err.stack);
           return null;
         });
@@ -118,7 +120,7 @@ class Onvif extends utils.Adapter {
         if (err) {
           return;
         }
-        let scopeObject = { name: "", hardware: "" };
+        const scopeObject = { name: "", hardware: "" };
         let xaddrs = "";
         let urn = "";
 
@@ -167,7 +169,7 @@ class Onvif extends utils.Adapter {
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
         if (this.devices[rinfo.address]) {
           this.log.info(
-            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`
+            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`,
           );
           return;
         }
@@ -420,7 +422,7 @@ class Onvif extends utils.Adapter {
           }
           // @ts-ignore
           resolve(this);
-        }
+        },
       );
     });
   }
@@ -588,9 +590,13 @@ class Onvif extends utils.Adapter {
             obj.from,
             obj.command,
             {
-              result: `Found ${this.discoveredDevices.length} cameras: ${JSON.stringify(this.discoveredDevices, null, 2)}. See log for details`,
+              result: `Found ${this.discoveredDevices.length} cameras: ${JSON.stringify(
+                this.discoveredDevices,
+                null,
+                2,
+              )}. See log for details`,
             },
-            obj.callback
+            obj.callback,
           );
       }
       if (obj.command === "manualSearch") {
@@ -604,7 +610,7 @@ class Onvif extends utils.Adapter {
             obj.from,
             obj.command,
             { result: `Found ${deviceArray.length} cameras: ${JSON.stringify(deviceArray, null, 2)}` },
-            obj.callback
+            obj.callback,
           );
       }
       if (obj.command === "snapshot") {
