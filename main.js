@@ -196,6 +196,7 @@ class Onvif extends utils.Adapter {
       // The ONVIF library had problems parsing some XML
       this.log.error("Discovery error " + err);
       this.log.error(xml);
+      this.log.error(err.stack);
     });
     await promisify(Discovery.probe)().catch((err) => {
       this.log.error("Error during discovery: " + err);
@@ -260,7 +261,7 @@ class Onvif extends utils.Adapter {
       streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
         .bind(cam)({ ProfileToken: profile.$.token })
         .catch((e) => {
-          this.log.error(`${cam.hostname}:${cam.port} Error getting snapshot url: ${e}`);
+          this.log.error(`${cam.hostname}:${cam.port} No snapshot url available: ${e}`);
         });
       if (!snapshotUrl && streamUris[profile.name].snapshotUrl) {
         snapshotUrl = streamUris[profile.name].snapshotUrl.uri;
@@ -272,7 +273,7 @@ class Onvif extends utils.Adapter {
           ProfileToken: profile.$.token,
         })
         .catch((e) => {
-          this.log.error(`${cam.hostname}:${cam.port} Error getting livestream tcp url: ${e}`);
+          this.log.warn(`${cam.hostname}:${cam.port} No livestream tcp url available: ${e}`);
         });
       streamUris[profile.name].live_stream_udp = await promisify(cam.getStreamUri)
         .bind(cam)({
@@ -281,7 +282,7 @@ class Onvif extends utils.Adapter {
           ProfileToken: profile.$.token,
         })
         .catch((e) => {
-          this.log.error(`${cam.hostname}:${cam.port} Error getting livestream udp url: ${e}`);
+          this.log.warn(`${cam.hostname}:${cam.port} No livestream udp url available: ${e}`);
         });
       streamUris[profile.name].live_stream_multicast = await promisify(cam.getStreamUri)
         .bind(cam)({
@@ -290,7 +291,7 @@ class Onvif extends utils.Adapter {
           ProfileToken: profile.$.token,
         })
         .catch((e) => {
-          this.log.error(`${cam.hostname}:${cam.port} Error getting livestream udp multi url: ${e}`);
+          this.log.warn(`${cam.hostname}:${cam.port} No livestream udp multi url available: ${e}`);
         });
       streamUris[profile.name].http_stream = await promisify(cam.getStreamUri)
         .bind(cam)({
@@ -299,7 +300,7 @@ class Onvif extends utils.Adapter {
           ProfileToken: profile.$.token,
         })
         .catch((e) => {
-          this.log.error(`${cam.hostname}:${cam.port} Error getting livestream http url: ${e}`);
+          this.log.warn(`${cam.hostname}:${cam.port} No livestream http url available: ${e}`);
         });
     }
 
