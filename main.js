@@ -274,7 +274,7 @@ class Onvif extends utils.Adapter {
       streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
         .bind(cam)({ ProfileToken: profile.$.token })
         .catch((e) => {
-          this.log.error("Error getting snapshot url: " + e);
+          this.log.error(`${cam.hostname}:${cam.port} Error getting snapshot url: ${e}`);
         });
       if (!snapshotUrl && streamUris[profile.name].snapshotUrl) {
         snapshotUrl = streamUris[profile.name].snapshotUrl.uri;
@@ -286,7 +286,7 @@ class Onvif extends utils.Adapter {
           ProfileToken: profile.$.token,
         })
         .catch((e) => {
-          this.log.error("Error getting live stream tcp url: " + e);
+          this.log.error(`${cam.hostname}:${cam.port} Error getting livestream tcp url: ${e}`);
         });
       streamUris[profile.name].live_stream_udp = await promisify(cam.getStreamUri)
         .bind(cam)({
@@ -295,7 +295,7 @@ class Onvif extends utils.Adapter {
           ProfileToken: profile.$.token,
         })
         .catch((e) => {
-          this.log.error("Error getting live stream udp url: " + e);
+          this.log.error(`${cam.hostname}:${cam.port} Error getting livestream udp url: ${e}`);
         });
       streamUris[profile.name].live_stream_multicast = await promisify(cam.getStreamUri)
         .bind(cam)({
@@ -304,7 +304,7 @@ class Onvif extends utils.Adapter {
           ProfileToken: profile.$.token,
         })
         .catch((e) => {
-          this.log.error("Error getting live stream multicast url: " + e);
+          this.log.error(`${cam.hostname}:${cam.port} Error getting livestream udp multi url: ${e}`);
         });
       streamUris[profile.name].http_stream = await promisify(cam.getStreamUri)
         .bind(cam)({
@@ -313,7 +313,7 @@ class Onvif extends utils.Adapter {
           ProfileToken: profile.$.token,
         })
         .catch((e) => {
-          this.log.error("Error getting http stream url: " + e);
+          this.log.error(`${cam.hostname}:${cam.port} Error getting livestream http url: ${e}`);
         });
     }
 
