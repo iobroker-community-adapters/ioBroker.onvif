@@ -343,7 +343,7 @@ class Onvif extends utils.Adapter {
     await this.setObjectNotExistsAsync(id + ".events", {
       type: "channel",
       common: {
-        name: "Camera Events",
+        name: "Camera Events. If empty trigger the event on the camera",
       },
       native: {},
     });

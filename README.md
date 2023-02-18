@@ -33,7 +33,7 @@ Es können Kameras manuell gesucht werden, falls Discovery nicht funktioniert. D
 
 ## Datenpunkte
 
-onvif.0.IP_PORT.events Events der Kamera wie z.b. Bewegungserkennung
+onvif.0.IP_PORT.events Events der Kamera wie z.b. Bewegungserkennung. Manchmal muss ein Event ausgelöst werden damit er angezeigt wird.
 
 onvif.0.IP_PORT.general Generelle Information über die Kameras
 
@@ -119,7 +119,7 @@ Cameras can be searched for manually if Discovery does not work. To do this, an 
 
 ## Data points
 
-onvif.0.IP_PORT.events Events of the camera like e.g. motion detection
+onvif.0.IP_PORT.events Events of the camera like e.g. motion detection. Sometimes you have to trigger the event to see it.
 
 onvif.0.IP_PORT.general General information about the cameras
 
