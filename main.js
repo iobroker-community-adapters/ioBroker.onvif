@@ -107,18 +107,7 @@ class Onvif extends utils.Adapter {
       // Parsing of Discovery responses taken from my ONVIF-Audit project, part of the 2018 ONVIF Open Source Challenge
       // Filter out xml name spaces
       xml = xml.replace(/xmlns([^=]*?)=(".*?")/g, "");
-      xml = `<soap:Envelope   >
-	<soap:Header>
-		<wsa:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/ProbeMatches</wsa:Action>
-		<wsa:MessageID>urn:uuid:2103980d-d1e4-45f9-a254-7060656a0240</wsa:MessageID>
-		<wsa:RelatesTo>urn:uuid:83c2918f-0ea3-387d-d813-662f936f47ae</wsa:RelatesTo>
-		<wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
-		<wsd:AppSequence InstanceId="3833292636" MessageNumber="1"/>
-	</soap:Header>
-	<soap:Body>
-		<wsd:ProbeMatches/>
-	</soap:Body>
-</soap:Envelope>`;
+
       const parser = new xml2js.Parser({
         attrkey: "attr",
         charkey: "payload", // this ensures the payload is called .payload regardless of whether the XML Tags have Attributes or not
