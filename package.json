@@ -23,7 +23,7 @@
     "@iobroker/adapter-core": "^2.6.7",
     "json2iob": "^2.4.0",
     "onvif": "^0.6.7",
-    "urllib": "^3.11.0",
+    "urllib": "^2.40.0",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
