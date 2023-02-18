@@ -6,7 +6,19 @@
       "type": "staticText",
       "newLine": true,
       "sm": 12,
-      "text": "Enter Username and Password of onvif user of the camera. \nDiscovery happens automatically at adapter start or after settings save.",
+      "text": {
+        "en": "Enter Username and Password of onvif user of the camera. \nDiscovery happens automatically at adapter start or after settings save. Delete the camera under objects to rediscover",
+        "de": "Geben Sie Benutzername und Passwort des Benutzers der Onvif-Kamera ein. \nKamerasuche geschieht automatisch bei Adapterstart oder nach Einstellungen speichern. Löschen Sie die Kamera unter Objekten, um sie erneut zu finden.",
+        "ru": "Введите имя пользователя и пароль пользователя камеры. \nDiscovery происходит автоматически при запуске адаптера или после сохранения настроек. Удалить камеру под объектами для восстановления",
+        "pt": "Digite o nome de usuário e senha do usuário onvif da câmera. \nDiscovery acontece automaticamente no início do adaptador ou após as configurações salvar. Excluir a câmera sob objetos para redescobrir",
+        "nl": "Voer User naam en wachtwoord van onvif gebruiker van de camera. NDIScovery gebeurt automatisch bij adapter start of na de instellingen. Verwijder de camera onder objecten om te herontdekken",
+        "fr": "Entrez Identifiant et mot de passe de l'utilisateur onvif de la caméra. \nDiscovery se produit automatiquement au démarrage de l'adaptateur ou après les réglages. Supprimer la caméra sous les objets pour redécouvrir",
+        "it": "Inserisci nome utente e password dell'utente onvif della fotocamera. \nDiscovery avviene automaticamente all'avvio dell'adattatore o dopo le impostazioni salvate. Eliminare la fotocamera sotto gli oggetti per riscoprire",
+        "es": "Introduzca Nombre de usuario y contraseña del usuario onvif de la cámara. \nDescubrimiento ocurre automáticamente en el inicio del adaptador o después de guardar la configuración. Eliminar la cámara bajo objetos para redescubrir",
+        "pl": "Enter Username and Password of onvif (ang.). TornDiscovery pojawia się automatycznie na startie adapterowym lub po ocaleniu. Kamera ukryta pod obiektami rediscoveru",
+        "uk": "Введіть ім'я користувача та пароль користувача камери. \nDiscovery відбувається автоматично при запуску адаптера або після збереження налаштувань. Видалення камери під об'єктами для відновлення",
+        "zh-cn": "摄像器的名称和密码。 在适应开始时或之后自动发生污名。 删除物品中的摄像机,以重新发现"
+      },
       "style": {
         "paddingTop": 50,
         "fontWeight": "bold",
@@ -64,18 +76,54 @@
       "icon": "search",
       "showProcessing": true,
       "command": "discover",
-      "label": "Start Camera Discovery"
+      "label": {
+        "en": "Start Camera Discovery",
+        "de": "Kamera Suche starten",
+        "ru": "Начало камеры Discovery",
+        "pt": "Start Camera Discovery",
+        "nl": "Start Camera Discover",
+        "fr": "Start Camera Discovery",
+        "it": "Start Camera Discovery",
+        "es": "Start Camera Discovery",
+        "pl": "Oficjalna strona Discovery",
+        "uk": "Старт камери Discovery",
+        "zh-cn": "B. 自卡迈拉人解"
+      }
     },
     "_manual": {
       "newLine": true,
       "type": "panel",
-      "label": "Manual Camera Search",
+      "label": {
+        "en": "Manual Camera Search",
+        "de": "Manuelle Kamerasuche",
+        "ru": "Руководство по поиску камеры",
+        "pt": "Pesquisa de câmera manual",
+        "nl": "Handboek Camera Search",
+        "fr": "Recherche de caméras manuelles",
+        "it": "Ricerca della macchina fotografica manuale",
+        "es": "Búsqueda de cámara manual",
+        "pl": "Poszukiwania",
+        "uk": "Ручний пошук камери",
+        "zh-cn": "手册"
+      },
       "items": {
         "_manualSearchHint": {
           "type": "staticText",
           "newLine": true,
           "sm": 12,
-          "text": "If discover does not work, you can try to search for cameras manually.",
+          "text": {
+            "en": "If discover does not work, you can try to search for cameras manually.",
+            "de": "Wenn die Kamerasuche nicht funktioniert, können Sie versuchen, nach Kameras manuell zu suchen.",
+            "ru": "Если обнаружить не работает, вы можете попробовать искать камеры вручную.",
+            "pt": "Se descobrir não funciona, você pode tentar procurar câmeras manualmente.",
+            "nl": "Als de ontdekking niet werkt, kun je handmatig zoeken naar camera's.",
+            "fr": "Si la découverte ne fonctionne pas, vous pouvez essayer de rechercher des caméras manuellement.",
+            "it": "Se la scoperta non funziona, è possibile cercare manualmente le telecamere.",
+            "es": "Si el descubrimiento no funciona, puede intentar buscar cámaras manualmente.",
+            "pl": "Jeśli odkrywamy, że nie pracują, możesz szukać kamer.",
+            "uk": "Якщо ви не працюєте, ви можете спробувати шукати камери вручну.",
+            "zh-cn": "如果发现没有工作,你可以尝试用手机搜寻摄影。."
+          },
           "style": {
             "paddingTop": 50,
             "fontWeight": "bold",
@@ -120,7 +168,19 @@
           "icon": "search",
           "showProcessing": true,
           "command": "manualSearch",
-          "label": "Start Camera Search",
+          "label": {
+            "en": "Start manuel Camera Search",
+            "de": "Manuel Kamera suchen",
+            "ru": "Начать manuel Camera Search",
+            "pt": "Iniciar pesquisa de câmera",
+            "nl": "Begin met Manuel Camera Search",
+            "fr": "Start Camera manuel Recherche",
+            "it": "Start manuel Camera Cerca",
+            "es": "Inicio manuel Cámara Buscar",
+            "pl": "Strona internetowa firmy Camera Search",
+            "uk": "Початок manuel камера пошук",
+            "zh-cn": "创办人"
+          },
           "result": {
             "ok": "See log output for results"
           }
