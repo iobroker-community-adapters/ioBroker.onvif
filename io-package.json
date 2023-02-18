@@ -81,6 +81,41 @@
     "username": "admin",
     "password": "admin"
   },
+  "messages": [
+    {
+      "condition": {
+        "operand": "and",
+        "rules": ["oldVersion<1.0.0", "newVersion>=1.0.0"]
+      },
+      "title": {
+        "en": "Important notice!",
+        "de": "Wichtiger Hinweis!",
+        "ru": "Важное замечание!",
+        "pt": "Notícia importante!",
+        "nl": "Belangrijke mededeling!",
+        "fr": "Avis important!",
+        "it": "Avviso IMPORTANTE!",
+        "es": "Noticia importante!",
+        "pl": "Ważna uwaga!",
+        "zh-cn": "重要通知!"
+      },
+      "text": {
+        "en": "The adapter was completely rewritten and the event objects were changed. With the update, all recognized cameras are deleted and must be found again.",
+        "de": "Der Adapter wurde komplett neu geschrieben und die Ereignisobjekte wurden geändert. Mit dem Update werden alle erkannten Kameras gelöscht und müssen erneut gesucht werden.",
+        "ru": "Адаптер был полностью переписан, и объекты мероприятия были изменены. С обновлением все признанные камеры удаляются и должны быть найдены снова.",
+        "pt": "O adaptador foi completamente reescrito e os objetos do evento foram alterados. Com a atualização, todas as câmeras reconhecidas são excluídas e devem ser encontradas novamente.",
+        "nl": "De adapter was volledig herschreven en de voorwerpen werden veranderd. Met de update zijn alle herkende camera's verwijderd en moeten we weer gevonden worden.",
+        "fr": "L'adaptateur a été entièrement réécrit et les objets de l'événement ont été changés. Avec la mise à jour, tous les appareils photo reconnus sont supprimés et doivent être retrouvés à nouveau.",
+        "it": "L'adattatore è stato completamente riscritto e gli oggetti dell'evento sono stati modificati. Con l'aggiornamento, tutte le telecamere riconosciute vengono eliminate e devono essere trovate di nuovo.",
+        "es": "El adaptador fue completamente reescrito y los objetos del evento fueron cambiados. Con la actualización, todas las cámaras reconocidas se eliminan y deben ser encontradas de nuevo.",
+        "pl": "Adaptator został całkowicie przepisany, a obiekty zdarzenia zostały zmienione. Wraz z aktualizacją wszystkie rozpoznawane kamery są usuwane i muszą zostać ponownie odnalezione.",
+        "uk": "Перехідник повністю повторився, а об’єкти заходу були змінені. З оновленням всі визначені камери видаляються і повинні бути знайдені знову.",
+        "zh-cn": "适应者完全被改写,活动物品也发生了变化。 更新后,所有公认的摄像机都被删除,必须再次发现。."
+      },
+      "level": "warn",
+      "buttons": ["agree", "cancel"]
+    }
+  ],
   "objects": [],
   "instanceObjects": [
     {
