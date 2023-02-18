@@ -39,6 +39,10 @@ onvif.0.IP_PORT.general Generelle Information über die Kameras
 
 onvif.0.IP_PORT.infos Informationen über die Kamera werden nur bei Adapterstart aktualisiert oder bei remote.refresh
 
+Video und Snapshot URL:
+
+onvif.0.IP_PORT.infos.streamUris.MediaProfile_Channel1_MainStream.snapshotUrl.uri
+
 onvif.0.IP_PORT.remote Steuerung der Kamera
 
 onvif.0.IP_PORT.remote.refresh Aktualisierung der Infodaten
@@ -85,6 +89,10 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
 
 ## Snapshot in vis einbinden
 
+Wenn möglich die snapshotUri verwenden z.B.
+
+onvif.0.IP_PORT.infos.streamUris.MediaProfile_Channel1_MainStream.snapshotUrl.uri
+
 Den Datenpunkt onvif.0.IP_PORT.snapshot ein `String img src` element zuordnen
 
 Den Datenpunkt onvif.0.IP_PORT.snapshot als `HTML` element in die vis einfügen mit folgendem Inhalt
@@ -116,6 +124,10 @@ onvif.0.IP_PORT.events Events of the camera like e.g. motion detection
 onvif.0.IP_PORT.general General information about the cameras
 
 onvif.0.IP_PORT.infos Information about the camera is only updated at adapter start or at remote.refresh
+
+Video and Snapshot URL:
+
+onvif.0.IP_PORT.infos.streamUris.MediaProfile_Channel1_MainStream.snapshotUrl.uri
 
 onvif.0.IP_PORT.remote Control of the camera
 
@@ -166,6 +178,10 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
 ```
 
 ## Include snapshot in vis
+
+Use snapshot url when possible
+
+onvif.0.IP_PORT.infos.streamUris.MediaProfile_Channel1_MainStream.snapshotUrl.uri
 
 Assign a `String img src` element to the datapoint onvif.0.IP_PORT.snapshot
 
