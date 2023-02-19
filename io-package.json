@@ -80,7 +80,9 @@
   "protectedNative": ["password"],
   "native": {
     "user": "admin",
-    "password": "admin"
+    "password": "admin",
+    "activateServer": false,
+    "serverPort": 8095
   },
   "messages": [
     {

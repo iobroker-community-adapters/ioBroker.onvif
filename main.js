@@ -13,6 +13,7 @@ const Cam = require("onvif").Cam;
 const xml2js = require("xml2js");
 const Discovery = require("onvif").Discovery;
 const { promisify } = require("util");
+const http = require("http");
 
 class Onvif extends utils.Adapter {
   /**
@@ -80,6 +81,23 @@ class Onvif extends utils.Adapter {
     this.log.info("Start onvif discovery");
     await this.discovery();
     this.log.info("Finished onvif discovery");
+    if (this.config.activateServer) {
+      this.log.info("Starting snapshot server");
+      await this.startServer();
+    }
+  }
+  async startServer() {
+    this.server = http.createServer(async (req, res) => {
+      res.writeHead(200, { "Content-Type": "image/jpg" });
+      const camId = this.devices[req.url.split("/")[1]];
+      if (camId) {
+        const image = await this.getSnapshot(camId);
+        image.pipe(res);
+      } else {
+        res.end();
+      }
+    });
+    this.server.listen(this.config.serverPort);
   }
   async processEvent(device, event) {
     this.log.debug(`Received event: ${JSON.stringify(event)}`);
@@ -165,7 +183,6 @@ class Onvif extends utils.Adapter {
           this.log.warn("Skip parsing xml: " + error);
           this.log.warn(xml);
         }
-        this.discoveredDevices.push(scopeObject.name + "_" + rinfo.address);
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
         if (this.devices[rinfo.address]) {
           this.log.info(
@@ -184,6 +201,7 @@ class Onvif extends utils.Adapter {
           .then(async (cam) => {
             this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
             const native = await this.fetchCameraInfos(cam, rinfo);
+            this.discoveredDevices.push(native.name);
             this.devices[cam.hostname] = cam;
             cam.on("event", this.processEvent.bind(this, { native: native }));
           })
@@ -554,7 +572,11 @@ class Onvif extends utils.Adapter {
   fromLong(ipl) {
     return (ipl >>> 24) + "." + ((ipl >> 16) & 255) + "." + ((ipl >> 8) & 255) + "." + (ipl & 255);
   }
-
+  async sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances!
    * @param {() => void} callback
@@ -583,14 +605,15 @@ class Onvif extends utils.Adapter {
           this.sendTo(obj.from, obj.command, { error: `Discovery failed` }, obj.callback);
           return;
         });
+        await this.sleep(5000);
         this.log.info("Discovery finished");
-        this.log.info(`Found ${this.discoveredDevices.length} cameras: ${JSON.stringify(this.discoveredDevices, null, 2)}`);
+        this.log.info(`Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(this.discoveredDevices, null, 2)}`);
         obj.callback &&
           this.sendTo(
             obj.from,
             obj.command,
             {
-              result: `Found ${this.discoveredDevices.length} cameras: ${JSON.stringify(
+              result: `Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(
                 this.discoveredDevices,
                 null,
                 2,
