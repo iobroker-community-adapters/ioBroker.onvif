@@ -89,13 +89,18 @@ class Onvif extends utils.Adapter {
   async startServer() {
     this.server = http.createServer(async (req, res) => {
       try {
-        const camId = req.url.split("/")[1];
+        const camId = req.url.split("/")[1].split("?")[0];
         const native = this.deviceNatives[camId];
         if (native && native.snapshotUrl) {
-          res.writeHead(200, { "Content-Type": "image/jpg" });
           const image = await this.getSnapshot(camId);
-          res.write(image);
-          res.end();
+          if (image != null) {
+            res.writeHead(200, { "Content-Type": "image/jpg" });
+            res.write(image);
+            res.end();
+          } else {
+            res.writeHead(500);
+            res.end();
+          }
         } else {
           res.writeHead(404);
           res.write("No camera or snapshotUrl found");
