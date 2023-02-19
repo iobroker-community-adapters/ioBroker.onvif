@@ -189,20 +189,30 @@
     "_server": {
       "newLine": true,
       "type": "panel",
-      "label": {
-        "en": "Activate a local server to serve snapshots without password. http://iobrokerIp:8095/CAMERAIP_PORT e.g. http://192.168.0.1:8095/192_168_0_1_80",
-        "de": "Aktivieren Sie einen lokalen Server, um Snapshots ohne Passwort zu bedienen. http://iobrokerIp:8095/CAMERAIP_PORT z.B. http://192.168.0.1:8095/192_168_0_1_80",
-        "ru": "Активируйте локальный сервер, чтобы служить снимкам без пароля. http://iobrokerIp:8095/CAMERAIP_PORT например http://192.168.0.1:8095/192_168_0_1_80",
-        "pt": "Ative um servidor local para servir instantâneos sem senha. http://iobrokerIp:8095/CAMERAIP_PORT por exemplo, http://192.168.0.1:8095/192_168_0_1_80",
-        "nl": "Activeer een lokale server om foto's te serveren zonder wachtwoord.  http://iobrokerIp:8095/CAMERAIP_PORT e.g. http://192.168.0.1:8095/192_168_0_1_80",
-        "fr": "Activer un serveur local pour servir des instantanés sans mot de passe. http://iobrokerIp:8095/CAMERAIP_PORT e.g http://192.168.0.1:8095/192_168_0_1_80",
-        "it": "Attivare un server locale per servire istantanee senza password. http://iobrokerIp:8095/CAMERAIP_PORT es. http://192.168.0.1:8095/192_168_0_1_80",
-        "es": "Activar un servidor local para servir instantáneas sin contraseña. http://iobrokerIp:8095/CAMERAIP_PORT e.g http://192.168.0.1:8095/192_168_0_1_80",
-        "pl": "Prowadzi lokalny serwer służący do strzelaniny bez haseł. http:/ibrokerIp:8095/CAMERAIP_PORT (ang.). e.g http://192.168.0.1:8095/192_168_1_80_80_1_80_1_80_1_80",
-        "uk": "Активувати локальний сервер, щоб служити знімками без пароля.  http://iobrokerIp:8095/CAMERAIP_PORT e.g. http://192.168.0.1:8095/192_168_0_1_80",
-        "zh-cn": "不言言而论,当地服务器为绑架热线服务。 http://iobrokerIp:8095/CATOAIP_PORT 例如http://192.168.0:8095/192_168_0_1_801"
-      },
       "items": {
+        "_serverHint": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "en": "Activate a local server to serve snapshots without password. http://iobrokerIp:8095/CAMERAIP_PORT e.g. http://192.168.0.1:8095/192_168_0_1_80",
+            "de": "Aktivieren Sie einen lokalen Server, um Snapshots ohne Passwort zu verteilen. http://iobrokerIp:8095/CAMERAIP_PORT z.B. http://192.168.0.1:8095/192_168_0_1_80",
+            "ru": "Активируйте локальный сервер, чтобы служить снимкам без пароля. http://iobrokerIp:8095/CAMERAIP_PORT например http://192.168.0.1:8095/192_168_0_1_80",
+            "pt": "Ative um servidor local para servir instantâneos sem senha. http://iobrokerIp:8095/CAMERAIP_PORT por exemplo, http://192.168.0.1:8095/192_168_0_1_80",
+            "nl": "Activeer een lokale server om foto's te serveren zonder wachtwoord.  http://iobrokerIp:8095/CAMERAIP_PORT e.g. http://192.168.0.1:8095/192_168_0_1_80",
+            "fr": "Activer un serveur local pour servir des instantanés sans mot de passe. http://iobrokerIp:8095/CAMERAIP_PORT e.g http://192.168.0.1:8095/192_168_0_1_80",
+            "it": "Attivare un server locale per servire istantanee senza password. http://iobrokerIp:8095/CAMERAIP_PORT es. http://192.168.0.1:8095/192_168_0_1_80",
+            "es": "Activar un servidor local para servir instantáneas sin contraseña. http://iobrokerIp:8095/CAMERAIP_PORT e.g http://192.168.0.1:8095/192_168_0_1_80",
+            "pl": "Prowadzi lokalny serwer służący do strzelaniny bez haseł. http:/ibrokerIp:8095/CAMERAIP_PORT (ang.). e.g http://192.168.0.1:8095/192_168_1_80_80_1_80_1_80_1_80",
+            "uk": "Активувати локальний сервер, щоб служити знімками без пароля.  http://iobrokerIp:8095/CAMERAIP_PORT e.g. http://192.168.0.1:8095/192_168_0_1_80",
+            "zh-cn": "不言言而论,当地服务器为绑架热线服务。 http://iobrokerIp:8095/CATOAIP_PORT 例如http://192.168.0:8095/192_168_0_1_801"
+          },
+          "style": {
+            "paddingTop": 50,
+            "fontWeight": "bold",
+            "font-size": "1rem"
+          }
+        },
         "activateServer": {
           "newLine": true,
           "type": "checkbox",

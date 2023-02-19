@@ -28,7 +28,8 @@ class Onvif extends utils.Adapter {
     this.on("stateChange", this.onStateChange.bind(this));
     this.on("unload", this.onUnload.bind(this));
     this.on("message", this.onMessage.bind(this));
-    this.deviceArray = [];
+    this.deviceArrayManualSearch = [];
+    this.deviceNatives = {};
     this.devices = {};
     this.discoveredDevices = [];
     this.json2iob = new Json2iob(this);
@@ -46,6 +47,7 @@ class Onvif extends utils.Adapter {
     for (const device of adapterDevices) {
       this.log.info(`Found Adapter Device: ${device._id} ${device.common.name}`);
       this.log.debug("Device: " + JSON.stringify(device));
+      this.deviceNatives[device.native.id] = device.native;
       const camObj = await this.initDevice({
         ip: device.native.ip,
         port: device.native.port,
@@ -58,9 +60,7 @@ class Onvif extends utils.Adapter {
         })
         .catch(async (err) => {
           this.log.error(`Error initializing device: ${err} device: ${JSON.stringify(device.native)}`);
-          this.log.error(
-            `You can change user and password under object and edit device or delete device under objects and restart adapter`,
-          );
+          this.log.error(`You can change user and password under object and edit device or delete device under objects and restart adapter`);
           this.log.error(err.stack);
           return null;
         });
@@ -88,13 +88,24 @@ class Onvif extends utils.Adapter {
   }
   async startServer() {
     this.server = http.createServer(async (req, res) => {
-      res.writeHead(200, { "Content-Type": "image/jpg" });
-      const camId = this.devices[req.url.split("/")[1]];
-      if (camId) {
-        const image = await this.getSnapshot(camId);
-        image.pipe(res);
-      } else {
+      try {
+        const camId = req.url.split("/")[1];
+        const native = this.deviceNatives[camId];
+        if (native && native.snapshotUrl) {
+          res.writeHead(200, { "Content-Type": "image/jpg" });
+          const image = await this.getSnapshot(camId);
+          res.write(image);
+          res.end();
+        } else {
+          res.writeHead(404);
+          res.write("No camera or snapshotUrl found");
+          res.end();
+        }
+      } catch (error) {
+        this.log.error(error);
+        res.writeHead(500);
         res.end();
+        this.log.error(error.stack);
       }
     });
     this.server.listen(this.config.serverPort);
@@ -186,7 +197,7 @@ class Onvif extends utils.Adapter {
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
         if (this.devices[rinfo.address]) {
           this.log.info(
-            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`,
+            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`
           );
           return;
         }
@@ -201,6 +212,7 @@ class Onvif extends utils.Adapter {
           .then(async (cam) => {
             this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
             const native = await this.fetchCameraInfos(cam, rinfo);
+            this.deviceNatives[native.id] = native;
             this.discoveredDevices.push(native.name);
             this.devices[cam.hostname] = cam;
             cam.on("event", this.processEvent.bind(this, { native: native }));
@@ -440,27 +452,27 @@ class Onvif extends utils.Adapter {
           }
           // @ts-ignore
           resolve(this);
-        },
+        }
       );
     });
   }
   async getSnapshot(id) {
-    const deviceObject = await this.getObjectAsync(id);
-    if (!deviceObject || !deviceObject.native || !deviceObject.native.snapshotUrl) {
+    const native = this.deviceNatives[id];
+    if (!native || !native.snapshotUrl) {
       this.log.warn("No snapshot url found for " + id);
       return;
     }
-    const snapshotUrl = deviceObject.native.snapshotUrl;
+    const snapshotUrl = native.snapshotUrl;
     const response = await request(snapshotUrl, {
       method: "GET",
-      auth: `${deviceObject.native.user}:${deviceObject.native.password}`,
+      auth: `${native.user}:${native.password}`,
     })
       .then(async (response) => {
         if (response.status === 401) {
           //if basic auth fails try digest auth
           return await request(snapshotUrl, {
             method: "GET",
-            digestAuth: `${deviceObject.native.user}:${deviceObject.native.password}`,
+            digestAuth: `${native.user}:${native.password}`,
           })
             .then((response) => {
               if (response.status >= 400) {
@@ -501,6 +513,7 @@ class Onvif extends utils.Adapter {
             .then(async (cam) => {
               this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
               const native = await this.fetchCameraInfos(cam, { address: cam.ip });
+              this.deviceNatives[native.id] = native;
               this.devices[cam.hostname] = cam;
               cam.on("event", this.processEvent.bind(this, { native: native }));
               return native.name;
@@ -613,13 +626,9 @@ class Onvif extends utils.Adapter {
             obj.from,
             obj.command,
             {
-              result: `Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(
-                this.discoveredDevices,
-                null,
-                2,
-              )}. See log for details`,
+              result: `Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(this.discoveredDevices, null, 2)}. See log for details`,
             },
-            obj.callback,
+            obj.callback
           );
       }
       if (obj.command === "manualSearch") {
@@ -633,7 +642,7 @@ class Onvif extends utils.Adapter {
             obj.from,
             obj.command,
             { result: `Found ${deviceArray.length} cameras: ${JSON.stringify(deviceArray, null, 2)}` },
-            obj.callback,
+            obj.callback
           );
       }
       if (obj.command === "snapshot") {
