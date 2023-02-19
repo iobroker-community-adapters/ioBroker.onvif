@@ -93,6 +93,8 @@ Wenn möglich die snapshotUri verwenden z.B.
 
 onvif.0.IP_PORT.infos.streamUris.MediaProfile_Channel1_MainStream.snapshotUrl.uri
 
+DEN DATENPUNKT NICHT ALS STREAM VERWENDEN, DA SONST DIE FESTPLATTE ZU HOHE LAST HAT.
+
 Den Datenpunkt onvif.0.IP_PORT.snapshot ein `String img src` element zuordnen
 
 Den Datenpunkt onvif.0.IP_PORT.snapshot als `HTML` element in die vis einfügen mit folgendem Inhalt
@@ -182,6 +184,8 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
 Use snapshot url when possible
 
 onvif.0.IP_PORT.infos.streamUris.MediaProfile_Channel1_MainStream.snapshotUrl.uri
+
+Do not use this datapoint as a stream because the load on the HDD is too high.
 
 Assign a `String img src` element to the datapoint onvif.0.IP_PORT.snapshot
 

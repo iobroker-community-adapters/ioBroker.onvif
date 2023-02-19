@@ -166,7 +166,6 @@
           },
           "jsonData": "{\"startIp\":\"${data.startIp}\",\"endIp\":\"${data.endIp}\",\"port\":\"${data.port}\",\"user\":\"${data.user}\",\"password\":\"${data.password}\"}",
           "icon": "search",
-          "showProcessing": true,
           "command": "manualSearch",
           "label": {
             "en": "Start manuel Camera Search",
