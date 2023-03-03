@@ -640,7 +640,7 @@ class Onvif extends utils.Adapter {
   }
   async sleep(ms) {
     return new Promise((resolve) => {
-      setTimeout(resolve, ms);
+      this.sleepTimeout = setTimeout(resolve, ms);
     });
   }
   /**
@@ -650,6 +650,7 @@ class Onvif extends utils.Adapter {
   onUnload(callback) {
     try {
       this.reconnectInterval && this.clearInterval(this.reconnectInterval);
+      this.sleepTimeout && clearTimeout(this.sleepTimeout);
       callback();
     } catch (e) {
       callback();
