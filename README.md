@@ -90,12 +90,15 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
 ## Snapshot in vis einbinden
 
 Wenn möglich die snapshotUri verwenden z.B.
-
 onvif.0.IP_PORT.infos.streamUris.MediaProfile_Channel1_MainStream.snapshotUrl.uri
 
-DEN DATENPUNKT NICHT ALS STREAM VERWENDEN, DA SONST DIE FESTPLATTE ZU HOHE LAST HAT.
+### _Den Datenpunkt nicht als Stream verwenden, da sonst die Festplatte zu hohe Last hat._
+
+#### Den Datenpunkt aktualisieren via onvif.0.IP_PORT.remote.snapshot
 
 Den Datenpunkt onvif.0.IP_PORT.snapshot ein `String img src` element zuordnen
+
+Oder als Alternative falls `String img src` nicht funktioniert
 
 Den Datenpunkt onvif.0.IP_PORT.snapshot als `HTML` element in die vis einfügen mit folgendem Inhalt
 
@@ -201,14 +204,9 @@ Add the datapoint onvif.0.IP_PORT.snapshot as `HTML` element to vis with the fol
 
 ## Changelog
 
-<!--
-    Placeholder for the next version (at the beginning of the line):
-    ### **WORK IN PROGRESS**
--->
+### 1.0.1
 
-### **WORK IN PROGRESS**
-
-- (TA2k) initial release
+- (TA2k) initial new release
 
 ## License
 

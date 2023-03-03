@@ -1,19 +1,20 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "news": {
-      "1.0.0": {
-        "en": "initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "Начальная версия",
-        "pt": "lançamento inicial",
-        "nl": "Eerste uitgave",
-        "fr": "Première version",
-        "it": "Versione iniziale",
-        "es": "Versión inicial",
-        "pl": "Pierwsze wydanie",
-        "zh-cn": "首次出版"
+      "1.0.1": {
+        "en": "New Adapter. Adapter was rewritten please read the new README",
+        "de": "Neuer Adapter. Adapter wurde neu geschrieben, bitte lesen Sie die neue README",
+        "ru": "Новый адаптер. Адаптер был переписан, пожалуйста, прочитайте новый README",
+        "pt": "Novo adaptador. Adapter foi reescrito por favor leia o novo README",
+        "nl": "Nieuwe Adapter. Adapter is herschreven, lees alsjeblieft de nieuwe ReadME",
+        "fr": "Nouveau Adaptateur. L'adaptateur a été réécrit s'il vous plaît lire la nouvelle README",
+        "it": "Nuovo adattatore. L'adattatore è stato riscritto si prega di leggere il nuovo README",
+        "es": "Nuevo Adaptador. Adaptador fue reescrito por favor lea el nuevo README",
+        "pl": "New Adapter (ang.). Adapter został ponownie napisany i odczytany jako nowy README",
+        "uk": "Новий адаптер. Переписаний адаптер, будь ласка, ознайомтесь з новим README",
+        "zh-cn": "新协定。 希望改写新版的中小企业"
       }
     },
     "title": "Onvif",
