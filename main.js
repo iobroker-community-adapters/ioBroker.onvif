@@ -581,6 +581,7 @@ class Onvif extends utils.Adapter {
     }
   }
   maskPassword(password) {
+    if (!password) return password;
     let replaced = password.replace(/./g, "*");
     //use first and last character of password
     replaced = password.charAt(0) + replaced.substring(1, replaced.length - 1) + password.charAt(password.length - 1);
