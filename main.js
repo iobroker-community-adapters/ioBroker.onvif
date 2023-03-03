@@ -212,7 +212,9 @@ class Onvif extends utils.Adapter {
           return;
         }
 
-        this.log.info(`Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.config.password);
+        this.log.info(
+          `Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password),
+        );
         await this.initDevice({
           ip: rinfo.address,
           port: cam.port,
@@ -231,7 +233,13 @@ class Onvif extends utils.Adapter {
             });
           })
           .catch((err) => {
-            this.log.error(`Failed to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.config.password);
+            this.log.error(
+              `Failed to login to ${rinfo.address}:${cam.port}` +
+                " with " +
+                this.config.user +
+                ":" +
+                this.maskPassword(this.config.password),
+            );
             this.log.error("Error " + err);
             this.log.debug(err.stack);
           });
@@ -536,7 +544,7 @@ class Onvif extends utils.Adapter {
               return native.name;
             })
             .catch((err) => {
-              this.log.error(`Failed to login to ${ip}:${port}` + " with " + options.user + ":" + options.password);
+              this.log.error(`Failed to login to ${ip}:${port}` + " with " + options.user + ":" + this.maskPassword(options.password));
               this.log.info("Error " + err);
               this.log.debug(err.stack);
               return;
@@ -571,6 +579,12 @@ class Onvif extends utils.Adapter {
       this.log.info("Done with cleaning");
       return true;
     }
+  }
+  maskPassword(password) {
+    let replaced = password.replace(/./g, "*");
+    //use first and last character of password
+    replaced = password.charAt(0) + replaced.substring(1, replaced.length - 1) + password.charAt(password.length - 1);
+    return replaced;
   }
   generateRange(startIp, endIp) {
     let startLong = this.toLong(startIp);
