@@ -60,7 +60,9 @@ class Onvif extends utils.Adapter {
         })
         .catch(async (err) => {
           this.log.error(`Error initializing device: ${err} device: ${JSON.stringify(device.native)}`);
-          this.log.error(`You can change user and password under object and edit device or delete device under objects and restart adapter`);
+          this.log.error(
+            `You can change user and password under object and edit device or delete device under objects and restart adapter`,
+          );
           this.log.error(err.stack);
           return null;
         });
@@ -149,6 +151,10 @@ class Onvif extends utils.Adapter {
   async processEvent(device, event) {
     this.log.debug(`Received event: ${JSON.stringify(event)}`);
     const id = event.topic._.split(":")[1];
+    if (!event.message) {
+      this.log.warn("Event without message: " + JSON.stringify(event));
+      return;
+    }
     let value = event.message.message.data.simpleItem.$.Value;
     const name = event.message.message.data.simpleItem.$.Name;
     if (typeof value === "object") {
@@ -233,12 +239,14 @@ class Onvif extends utils.Adapter {
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
         if (this.devices[rinfo.address]) {
           this.log.info(
-            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`
+            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`,
           );
           return;
         }
 
-        this.log.info(`Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password));
+        this.log.info(
+          `Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password),
+        );
         await this.initDevice({
           ip: rinfo.address,
           port: cam.port,
@@ -258,7 +266,11 @@ class Onvif extends utils.Adapter {
           })
           .catch((err) => {
             this.log.error(
-              `Failed to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password)
+              `Failed to login to ${rinfo.address}:${cam.port}` +
+                " with " +
+                this.config.user +
+                ":" +
+                this.maskPassword(this.config.password),
             );
             this.log.error("Error " + err);
             this.log.debug(err.stack);
@@ -493,7 +505,7 @@ class Onvif extends utils.Adapter {
           }
           // @ts-ignore
           resolve(this);
-        }
+        },
       );
     });
   }
@@ -678,9 +690,13 @@ class Onvif extends utils.Adapter {
             obj.from,
             obj.command,
             {
-              result: `Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(this.discoveredDevices, null, 2)}. See log for details`,
+              result: `Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(
+                this.discoveredDevices,
+                null,
+                2,
+              )}. See log for details`,
             },
-            obj.callback
+            obj.callback,
           );
       }
       if (obj.command === "manualSearch") {
@@ -694,7 +710,7 @@ class Onvif extends utils.Adapter {
             obj.from,
             obj.command,
             { result: `Found ${deviceArray.length} cameras: ${JSON.stringify(deviceArray, null, 2)}` },
-            obj.callback
+            obj.callback,
           );
       }
       if (obj.command === "snapshot") {
