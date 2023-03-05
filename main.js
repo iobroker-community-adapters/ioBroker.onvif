@@ -288,49 +288,59 @@ class Onvif extends utils.Adapter {
     });
   }
   async fetchCameraInfos(cam, rinfo) {
+    this.log.debug("Fetch camera infos for " + cam.hostname + ":" + cam.port);
     const timeDate = await promisify(cam.getSystemDateAndTime)
       .bind(cam)()
       .catch((e) => {
+        this.log.error("Failed to get SystemDateAndTime");
         this.log.error(e);
       });
     const deviceInformation = await promisify(cam.getDeviceInformation)
       .bind(cam)()
       .catch((e) => {
+        this.log.error("Failed to get DeviceInformation");
         this.log.error(e);
       });
     const deviceProfiles = await promisify(cam.getProfiles)
       .bind(cam)()
       .catch((e) => {
+        this.log.error("Failed to get Profiles");
         this.log.error(e);
       });
     const deviceCapabilities = await promisify(cam.getCapabilities)
       .bind(cam)()
       .catch((e) => {
+        this.log.error("Failed to get Capabilities");
         this.log.error(e);
       });
     const deviceServices = await promisify(cam.getServices)
       .bind(cam)(true)
       .catch((e) => {
+        this.log.error("Failed to get Services");
         this.log.error(e);
       });
     const deviceServicesCapabilities = await promisify(cam.getServiceCapabilities)
       .bind(cam)()
       .catch((e) => {
+        this.log.error("Failed to get ServiceCapabilities");
         this.log.error(e);
       });
     const scopes = await promisify(cam.getScopes)
       .bind(cam)()
       .catch((e) => {
+        this.log.error("Failed to get Scopes");
         this.log.error(e);
       });
     const videoSources = await promisify(cam.getVideoSources)
       .bind(cam)()
       .catch((e) => {
+        this.log.error("Failed to get VideoSources");
         this.log.error(e);
       });
     const status = await promisify(cam.getStatus)
       .bind(cam)()
       .catch((e) => {
+        this.log.error("Failed to get Status");
         this.log.error(e);
       });
     const presets = await promisify(cam.getPresets)
@@ -519,9 +529,11 @@ class Onvif extends utils.Adapter {
     const response = await request(snapshotUrl, {
       method: "GET",
       auth: `${native.user}:${native.password}`,
+      timeout: 7000,
     })
       .then(async (response) => {
         if (response.status === 401) {
+          this.log.debug("Basic auth failed, trying digest auth");
           //if basic auth fails try digest auth
           return await request(snapshotUrl, {
             method: "GET",
