@@ -77,7 +77,7 @@ class Onvif extends utils.Adapter {
           native: {},
         });
         camObj.on("event", this.processEvent.bind(this, device));
-        camObj.on("rawResponse", (xml, data) => {
+        camObj.on("rawResponse", (xml) => {
           this.log.debug(`${camObj.hostname}:${camObj.port} Raw Response: ${xml}`);
         });
         camObj.on("connect", () => {
