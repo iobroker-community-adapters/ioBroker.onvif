@@ -58,12 +58,13 @@ class Onvif extends utils.Adapter {
           this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
           return cam;
         })
-        .catch(async (err) => {
-          this.log.error(`Error initializing device: ${err} device: ${JSON.stringify(device.native)}`);
+        .catch(async (error) => {
+          this.log.error(`Data: ${error.data} XML: ${error.xml}`);
+          this.log.error(`Error initializing device: ${error.err} device: ${JSON.stringify(device.native)}`);
           this.log.error(
             `You can change user and password under object and edit device or delete device under objects and restart adapter`,
           );
-          this.log.error(err.stack);
+          this.log.error(error.err.stack);
           return null;
         });
       if (camObj) {
@@ -76,6 +77,9 @@ class Onvif extends utils.Adapter {
           native: {},
         });
         camObj.on("event", this.processEvent.bind(this, device));
+        camObj.on("rawResponse", (xml, data) => {
+          this.log.debug(`${camObj.hostname}:${camObj.port} Raw Response: ${xml}`);
+        });
         camObj.on("connect", () => {
           this.log.info("Connected to " + camObj.hostname + ":" + camObj.port);
         });
@@ -260,11 +264,14 @@ class Onvif extends utils.Adapter {
             this.discoveredDevices.push(native.name);
             this.devices[cam.hostname] = cam;
             cam.on("event", this.processEvent.bind(this, { native: native }));
+            cam.on("rawResponse", (xml) => {
+              this.log.debug(`${cam.hostname}:${cam.port} Raw Response: ${xml}`);
+            });
             cam.on("connect", () => {
               this.log.info("Connected to " + cam.hostname + ":" + cam.port);
             });
           })
-          .catch((err) => {
+          .catch((error) => {
             this.log.error(
               `Failed to login to ${rinfo.address}:${cam.port}` +
                 " with " +
@@ -272,8 +279,9 @@ class Onvif extends utils.Adapter {
                 ":" +
                 this.maskPassword(this.config.password),
             );
-            this.log.error("Error " + err);
-            this.log.debug(err.stack);
+            this.log.error("Error " + error.err);
+            this.log.debug(error.err.stack);
+            this.log.info(`Data: ${JSON.stringify(error.data)} xml: ${error.xml}`);
           });
       });
     });
@@ -340,8 +348,7 @@ class Onvif extends utils.Adapter {
     const status = await promisify(cam.getStatus)
       .bind(cam)()
       .catch((e) => {
-        this.log.error("Failed to get Status");
-        this.log.error(e);
+        this.log.error(`No status found for ${cam.hostname}:${cam.port} ${e}`);
       });
     const presets = await promisify(cam.getPresets)
       .bind(cam)()
@@ -509,9 +516,9 @@ class Onvif extends utils.Adapter {
           port: device.port,
           timeout: 5000,
         },
-        function (err) {
+        function (err, data, xml) {
           if (err) {
-            reject(err);
+            reject({ err, data, xml });
           }
           // @ts-ignore
           resolve(this);
@@ -584,13 +591,18 @@ class Onvif extends utils.Adapter {
               cam.on("connect", () => {
                 this.log.info("Connected to " + cam.hostname + ":" + cam.port);
               });
+              cam.on("rawResponse", (xml) => {
+                this.log.debug(`${cam.hostname}:${cam.port} Raw Response: ${xml}`);
+              });
 
               return native.name;
             })
-            .catch((err) => {
+            .catch((error) => {
               this.log.error(`Failed to login to ${ip}:${port}` + " with " + options.user + ":" + this.maskPassword(options.password));
-              this.log.info("Error " + err);
-              this.log.debug(err.stack);
+              this.log.info("Error " + error.err);
+              this.log.debug(error.err.stack);
+
+              this.log.info(`Data: ${JSON.stringify(error.data)} xml: ${error.xml}`);
               return;
             });
 
