@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "news": {
+      "1.0.2": {
+        "en": "Fixed a reonnect and empty event bug",
+        "de": "Fehler bei der Wiederverbindung und leerem Events behoben"
+      },
       "1.0.1": {
         "en": "New Adapter. Adapter was rewritten please read the new README",
         "de": "Neuer Adapter. Adapter wurde neu geschrieben, bitte lesen Sie die neue README",

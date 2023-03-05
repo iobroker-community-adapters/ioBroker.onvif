@@ -204,6 +204,10 @@ Add the datapoint onvif.0.IP_PORT.snapshot as `HTML` element to vis with the fol
 
 ## Changelog
 
+### 1.0.2
+
+- (TA2k) Fixed a reonnect and empty event bug
+
 ### 1.0.1
 
 - (TA2k) initial new release
