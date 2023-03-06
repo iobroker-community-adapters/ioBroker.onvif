@@ -167,6 +167,10 @@ class Onvif extends utils.Adapter {
       this.log.warn("Event without message: " + JSON.stringify(event));
       return;
     }
+    if (!event.message.message.data.simpleItem.$) {
+      this.log.warn("Event without event.message.message.data.simpleItem.$: " + JSON.stringify(event));
+      return;
+    }
     let value = event.message.message.data.simpleItem.$.Value;
     const name = event.message.message.data.simpleItem.$.Name;
     if (typeof value === "object") {
