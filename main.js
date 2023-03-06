@@ -605,7 +605,7 @@ class Onvif extends utils.Adapter {
             password: options.password,
           })
             .then(async (cam) => {
-              this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
+              this.log.info("Device successful initialized via manual search: " + cam.hostname + ":" + cam.port + " with IP " + cam.ip);
               const native = await this.fetchCameraInfos(cam, { address: cam.ip });
               this.deviceNatives[native.id] = native;
               this.devices[cam.hostname] = cam;
