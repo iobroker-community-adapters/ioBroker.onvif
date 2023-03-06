@@ -114,7 +114,11 @@ class Onvif extends utils.Adapter {
       }
       await promisify(cam.connect)
         .bind(cam)()
+        .then(() => {
+          this.setStateAsync(deviceId + ".connection", true, true);
+        })
         .catch((e) => {
+          this.setStateAsync(deviceId + ".connection", false, true);
           this.log.error(e);
         });
 
@@ -426,7 +430,7 @@ class Onvif extends utils.Adapter {
       password: cam.password,
       snapshotUrl: snapshotUrl,
     };
-
+    this.log.debug(`Creating camera ${id} with native ${JSON.stringify(native)} and rinfo ${JSON.stringify(rinfo)}`);
     await this.extendObjectAsync(id, {
       type: "device",
       common: {
@@ -455,6 +459,19 @@ class Onvif extends utils.Adapter {
       },
       native: {},
     });
+    await this.setObjectNotExistsAsync(id + ".connection", {
+      type: "state",
+      common: {
+        name: "Connection to camera",
+        type: "boolean",
+        role: "indicator.connected",
+        def: true,
+        write: false,
+        read: true,
+      },
+      native: {},
+    });
+    await this.setStateAsync(id + ".connection", true, true);
 
     const remoteArray = [
       { command: "Refresh", name: "True = Refresh" },
