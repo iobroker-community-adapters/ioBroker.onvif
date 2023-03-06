@@ -150,7 +150,11 @@ class Onvif extends utils.Adapter {
         this.log.error(error.stack);
       }
     });
-    this.server.listen(this.config.serverPort);
+    try {
+      this.server.listen(this.config.serverPort);
+    } catch (error) {
+      this.log.error(`Error starting server: ${error} check port: ${this.config.serverPort} is not used by other application`);
+    }
   }
   async processEvent(device, event) {
     this.log.debug(`Received event: ${JSON.stringify(event)}`);
