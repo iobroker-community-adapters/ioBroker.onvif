@@ -157,6 +157,10 @@ class Onvif extends utils.Adapter {
   }
   async processEvent(device, event) {
     this.log.debug(`Received event: ${JSON.stringify(event)}`);
+    if (!event.topic) {
+      this.log.warn("Event without topic: " + JSON.stringify(event));
+      return;
+    }
     const id = event.topic._.split(":")[1];
     if (!event.message) {
       this.log.warn("Event without message: " + JSON.stringify(event));
