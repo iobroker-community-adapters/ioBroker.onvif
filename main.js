@@ -163,15 +163,18 @@ class Onvif extends utils.Adapter {
     this.log.debug(`Received event: ${JSON.stringify(event)}`);
     if (!event.topic) {
       this.log.warn("Event without topic: " + JSON.stringify(event));
+      this.sendSentry(event);
       return;
     }
     const id = event.topic._.split(":")[1];
     if (!event.message) {
       this.log.warn("Event without message: " + JSON.stringify(event));
+      this.sendSentry(event);
       return;
     }
     if (!event.message.message.data.simpleItem.$) {
       this.log.warn("Event without event.message.message.data.simpleItem.$: " + JSON.stringify(event));
+      this.sendSentry(event);
       return;
     }
     let value = event.message.message.data.simpleItem.$.Value;
@@ -193,6 +196,21 @@ class Onvif extends utils.Adapter {
     });
     await this.setStateAsync(device.native.id + ".events." + id, value, true);
   }
+  sendSentry(event) {
+    if (this.supportsFeature && this.supportsFeature("PLUGINS")) {
+      const sentryInstance = this.getPluginInstance("sentry");
+      if (sentryInstance) {
+        const Sentry = sentryInstance.getSentryObject();
+        Sentry &&
+          Sentry.withScope((scope) => {
+            scope.setLevel("info");
+            scope.setExtra("key", "value");
+            Sentry.captureMessage("Event", JSON.stringify(event));
+          });
+      }
+    }
+  }
+
   async discovery() {
     Discovery.on("device", (cam, rinfo, xml) => {
       // Function will be called as soon as the NVT responses
