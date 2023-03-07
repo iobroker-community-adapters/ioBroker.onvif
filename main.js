@@ -544,12 +544,15 @@ class Onvif extends utils.Adapter {
           resolve(this);
         },
       );
+      // @ts-ignore
       cam.on("rawResponse", (data) => {
         this.log.debug("Raw response: " + data);
       });
+      // @ts-ignore
       cam.on("rawRequest", (data) => {
         this.log.debug("Raw request: " + data);
       });
+      // @ts-ignore
       cam.on("connect", () => {
         this.log.debug("Connected to " + cam.hostname + ":" + cam.port);
       });
@@ -614,7 +617,8 @@ class Onvif extends utils.Adapter {
             .then(async (cam) => {
               this.log.info("Device successful initialized via manual search: " + cam.hostname + ":" + cam.port + " with IP " + cam.ip);
               if (!cam.ip) {
-                this.log.warn("No IP found for " + cam.hostname + ":" + cam.port);
+                this.log.info("No IP found, using hostname instead: " + JSON.stringify(cam));
+                cam.ip = cam.hostname;
               }
               const native = await this.fetchCameraInfos(cam, { address: cam.ip });
               this.deviceNatives[native.id] = native;
