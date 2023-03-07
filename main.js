@@ -801,6 +801,10 @@ class Onvif extends utils.Adapter {
         }
         const cam = this.devices[deviceObject.native.ip];
         if (command === "Refresh") {
+          if (!cam) {
+            this.log.warn("No camera found for " + deviceId + " with ip " + deviceObject.native.ip);
+            return;
+          }
           this.fetchCameraInfos(cam, { address: deviceObject.native.ip });
           return;
         }
