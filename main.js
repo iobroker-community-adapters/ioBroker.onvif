@@ -61,9 +61,7 @@ class Onvif extends utils.Adapter {
         .catch(async (error) => {
           this.log.error(`Data: ${error.data} XML: ${error.xml}`);
           this.log.error(`Error initializing device: ${error.err} device: ${JSON.stringify(device.native)}`);
-          this.log.error(
-            `You can change user and password under object and edit device or delete device under objects and restart adapter`,
-          );
+          this.log.error(`You can change user and password under object and edit device or delete device under objects and restart adapter`);
           this.log.error(error.err.stack);
           return null;
         });
@@ -77,12 +75,7 @@ class Onvif extends utils.Adapter {
           native: {},
         });
         camObj.on("event", this.processEvent.bind(this, device));
-        camObj.on("rawResponse", (xml) => {
-          this.log.debug(`${camObj.hostname}:${camObj.port} Raw Response: ${xml}`);
-        });
-        camObj.on("connect", () => {
-          this.log.info("Connected to " + camObj.hostname + ":" + camObj.port);
-        });
+
         this.devices[camObj.hostname] = camObj;
       }
     }
@@ -256,14 +249,12 @@ class Onvif extends utils.Adapter {
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
         if (this.devices[rinfo.address]) {
           this.log.info(
-            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`,
+            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`
           );
           return;
         }
 
-        this.log.info(
-          `Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password),
-        );
+        this.log.info(`Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password));
         await this.initDevice({
           ip: rinfo.address,
           port: cam.port,
@@ -277,20 +268,10 @@ class Onvif extends utils.Adapter {
             this.discoveredDevices.push(native.name);
             this.devices[cam.hostname] = cam;
             cam.on("event", this.processEvent.bind(this, { native: native }));
-            cam.on("rawResponse", (xml) => {
-              this.log.debug(`${cam.hostname}:${cam.port} Raw Response: ${xml}`);
-            });
-            cam.on("connect", () => {
-              this.log.info("Connected to " + cam.hostname + ":" + cam.port);
-            });
           })
           .catch((error) => {
             this.log.error(
-              `Failed to login to ${rinfo.address}:${cam.port}` +
-                " with " +
-                this.config.user +
-                ":" +
-                this.maskPassword(this.config.password),
+              `Failed to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password)
             );
             this.log.error("Error " + error.err);
             this.log.debug(error.err.stack);
@@ -535,7 +516,7 @@ class Onvif extends utils.Adapter {
 
   async initDevice(device) {
     return new Promise((resolve, reject) => {
-      new Cam(
+      const cam = new Cam(
         {
           hostname: device.ip,
           username: device.username,
@@ -549,8 +530,17 @@ class Onvif extends utils.Adapter {
           }
           // @ts-ignore
           resolve(this);
-        },
+        }
       );
+      cam.on("rawResponse", (data) => {
+        this.log.debug("Raw response: " + data);
+      });
+      cam.on("rawRequest", (data) => {
+        this.log.debug("Raw request: " + data);
+      });
+      cam.on("connect", () => {
+        this.log.debug("Connected to " + cam.hostname + ":" + cam.port);
+      });
     });
   }
   async getSnapshot(id) {
@@ -615,12 +605,6 @@ class Onvif extends utils.Adapter {
               this.deviceNatives[native.id] = native;
               this.devices[cam.hostname] = cam;
               cam.on("event", this.processEvent.bind(this, { native: native }));
-              cam.on("connect", () => {
-                this.log.info("Connected to " + cam.hostname + ":" + cam.port);
-              });
-              cam.on("rawResponse", (xml) => {
-                this.log.debug(`${cam.hostname}:${cam.port} Raw Response: ${xml}`);
-              });
 
               return native.name;
             })
@@ -741,13 +725,9 @@ class Onvif extends utils.Adapter {
             obj.from,
             obj.command,
             {
-              result: `Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(
-                this.discoveredDevices,
-                null,
-                2,
-              )}. See log for details`,
+              result: `Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(this.discoveredDevices, null, 2)}. See log for details`,
             },
-            obj.callback,
+            obj.callback
           );
       }
       if (obj.command === "manualSearch") {
@@ -761,7 +741,7 @@ class Onvif extends utils.Adapter {
             obj.from,
             obj.command,
             { result: `Found ${deviceArray.length} cameras: ${JSON.stringify(deviceArray, null, 2)}` },
-            obj.callback,
+            obj.callback
           );
       }
       if (obj.command === "snapshot") {
