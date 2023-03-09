@@ -166,7 +166,9 @@ class Onvif extends utils.Adapter {
       this.sendSentry(event);
       return;
     }
-    const id = event.topic._.split(":")[1];
+    let id = event.topic._.split(":")[1];
+    id = id.replace(/\./g, "_");
+    
     if (!event.message) {
       this.log.warn("Event without message: " + JSON.stringify(event));
       this.sendSentry(event);
@@ -180,7 +182,6 @@ class Onvif extends utils.Adapter {
     let value = event.message.message.data.simpleItem.$.Value;
     let name = event.message.message.data.simpleItem.$.Name;
     name = name.replace(/\./g, "_");
-    id = id.replace(/\./g, "_");
     if (typeof value === "object") {
       value = JSON.stringify(value);
     }
