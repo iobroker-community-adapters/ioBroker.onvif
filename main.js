@@ -168,7 +168,7 @@ class Onvif extends utils.Adapter {
     }
     let id = event.topic._.split(":")[1];
     id = id.replace(/\./g, "_");
-    
+
     if (!event.message) {
       this.log.warn("Event without message: " + JSON.stringify(event));
       this.sendSentry(event);
