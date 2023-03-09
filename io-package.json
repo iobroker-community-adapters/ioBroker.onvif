@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "news": {
+      "1.0.3": {
+        "en": "Minor bugfixes",
+        "de": "Kleine Fehlerbehebungen"
+      },
       "1.0.2": {
         "en": "Fixed a reonnect and empty event bug",
         "de": "Fehler bei der Wiederverbindung und leerem Events behoben"
