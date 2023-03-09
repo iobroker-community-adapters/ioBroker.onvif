@@ -179,7 +179,7 @@ class Onvif extends utils.Adapter {
     }
     let value = event.message.message.data.simpleItem.$.Value;
     let name = event.message.message.data.simpleItem.$.Name;
-    name = name.replace(/./g, "_");
+    name = name.replace(/\./g, "_");
     if (typeof value === "object") {
       value = JSON.stringify(value);
     }
