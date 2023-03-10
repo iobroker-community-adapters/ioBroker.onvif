@@ -47,7 +47,6 @@ class Onvif extends utils.Adapter {
     for (const device of adapterDevices) {
       this.log.info(`Found Adapter Device: ${device._id} ${device.common.name}`);
       this.log.debug("Device: " + JSON.stringify(device));
-      this.deviceNatives[device.native.id] = device.native;
       if (!device.native.ip) {
         this.log.error(`Device ${device.common.name} has no ip address, please delete device and rediscover the camera`);
         device.native.ip = device.native.hostname;
@@ -81,7 +80,8 @@ class Onvif extends utils.Adapter {
         camObj.on("event", this.processEvent.bind(this, device));
 
         this.devices[camObj.hostname] = camObj;
-        this.fetchCameraInfos(camObj, { address: device.native.ip });
+        const native = await this.fetchCameraInfos(camObj, { address: device.native.ip });
+        this.deviceNatives[device.native.id] = native;
       }
     }
 
