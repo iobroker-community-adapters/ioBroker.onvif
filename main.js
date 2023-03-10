@@ -81,6 +81,7 @@ class Onvif extends utils.Adapter {
         camObj.on("event", this.processEvent.bind(this, device));
 
         this.devices[camObj.hostname] = camObj;
+        this.fetchCameraInfos(camObj, { address: device.native.ip });
       }
     }
 
