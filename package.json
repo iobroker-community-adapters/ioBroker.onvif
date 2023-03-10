@@ -20,7 +20,10 @@
     "node": ">= 14"
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffprobe-installer/ffprobe": "^2.0.0",
     "@iobroker/adapter-core": "^2.6.7",
+    "fluent-ffmpeg": "^2.1.2",
     "json2iob": "^2.4.0",
     "onvif": "^0.6.7",
     "urllib": "^2.40.0",

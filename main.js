@@ -585,44 +585,76 @@ class Onvif extends utils.Adapter {
   async getSnapshot(id) {
     const native = this.deviceNatives[id];
     if (!native || !native.snapshotUrl) {
-      this.log.warn("No snapshot url found for " + id);
-      return;
-    }
-    const snapshotUrl = native.snapshotUrl;
-    const response = await request(snapshotUrl, {
-      method: "GET",
-      auth: `${native.user}:${native.password}`,
-      timeout: 7000,
-    })
-      .then(async (response) => {
-        if (response.status === 401) {
-          this.log.debug("Basic auth failed, trying digest auth");
-          //if basic auth fails try digest auth
-          return await request(snapshotUrl, {
-            method: "GET",
-            digestAuth: `${native.user}:${native.password}`,
-          })
-            .then((response) => {
-              if (response.status >= 400) {
-                this.log.error("Error getting snapshot via digest: " + response);
-                return;
-              }
-              return response.data;
-            })
-            .catch((e) => {
-              this.log.error("Error getting snapshot via basic: " + e);
-            });
-        }
-        if (response.status >= 400) {
-          this.log.error("Error getting snapshot basic: " + response);
-          return;
-        }
-        return response.data;
-      })
-      .catch((e) => {
-        this.log.error("Error getting snapshot: " + e);
+      this.log.warn("No snapshot url found for " + id + " try ffmpeg as fallback");
+      if (!this.ffmpeg) {
+        this.ffmpeg = require("fluent-ffmpeg");
+        const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
+        const ffprobePath = require("@ffprobe-installer/ffprobe").path;
+
+        this.ffmpeg.setFfmpegPath(ffmpegPath);
+        this.ffmpeg.setFfprobePath(ffprobePath);
+      }
+
+      const command = this.ffmpeg(native.streamUrl)
+        .inputOptions(["-rtsp_transport tcp"])
+        .addOptions(["-flags +global_header", "-c:v", "libwebp", "-update", "1", "-s", "960x540", "-r", "1/5", "-f", "image2", "-y"])
+        .size("1280x720")
+        .on("error", function (err) {
+          console.log("An error occurred: " + err.message);
+        })
+        .on("end", function () {
+          console.log("Processing finished !");
+        });
+
+      const ffstream = command.pipe();
+      const buffers = [];
+      ffstream.on("data", function (chunk) {
+        console.log("ffmpeg just wrote " + chunk.length + " bytes");
+        buffers.push(chunk);
       });
-    return response;
+      ffstream.on("end", function () {
+        console.log("ffmpeg end");
+        const buffer = Buffer.concat(buffers);
+        console.log(buffer);
+      });
+      return;
+    } else {
+      const snapshotUrl = native.snapshotUrl;
+      const response = await request(snapshotUrl, {
+        method: "GET",
+        auth: `${native.user}:${native.password}`,
+        timeout: 7000,
+      })
+        .then(async (response) => {
+          if (response.status === 401) {
+            this.log.debug("Basic auth failed, trying digest auth");
+            //if basic auth fails try digest auth
+            return await request(snapshotUrl, {
+              method: "GET",
+              digestAuth: `${native.user}:${native.password}`,
+            })
+              .then((response) => {
+                if (response.status >= 400) {
+                  this.log.error("Error getting snapshot via digest: " + response);
+                  return;
+                }
+                return response.data;
+              })
+              .catch((e) => {
+                this.log.error("Error getting snapshot via basic: " + e);
+              });
+          }
+          if (response.status >= 400) {
+            this.log.error("Error getting snapshot basic: " + response);
+            return;
+          }
+          return response.data;
+        })
+        .catch((e) => {
+          this.log.error("Error getting snapshot: " + e);
+        });
+      return response;
+    }
   }
 
   async manualSearch(options) {
