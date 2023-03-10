@@ -174,7 +174,7 @@ class Onvif extends utils.Adapter {
       this.sendSentry(event);
       return;
     }
-    if (!event.message.message.data.simpleItem.$) {
+    if (!event.message.message.data.simpleItem || !event.message.message.data.simpleItem.$) {
       this.log.warn("Event without event.message.message.data.simpleItem.$: " + JSON.stringify(event));
       this.sendSentry(event);
       return;
