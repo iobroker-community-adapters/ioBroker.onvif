@@ -90,6 +90,7 @@
     "user": "admin",
     "password": "admin",
     "activateServer": false,
+    "useHighRes": false,
     "serverPort": 8095
   },
   "messages": [

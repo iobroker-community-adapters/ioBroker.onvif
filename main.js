@@ -131,7 +131,7 @@ class Onvif extends utils.Adapter {
       try {
         const camId = req.url.split("/")[1].split("?")[0];
         const native = this.deviceNatives[camId];
-        if (native && native.snapshotUrl) {
+        if (native) {
           const image = await this.getSnapshot(camId);
           if (image != null) {
             res.writeHead(200, { "Content-Type": "image/jpg" });
@@ -143,7 +143,7 @@ class Onvif extends utils.Adapter {
           }
         } else {
           res.writeHead(404);
-          res.write("No camera or snapshotUrl found");
+          res.write("No camera found");
           res.end();
         }
       } catch (error) {
@@ -387,6 +387,8 @@ class Onvif extends utils.Adapter {
         this.log.warn(`No presets found for ${cam.hostname}:${cam.port} ${e}`);
       });
     let snapshotUrl;
+    let minorStreamUrl;
+    let majorStreamUrl;
     const streamUris = {};
     //find image urls for each profile
     for (const profile of deviceProfiles) {
@@ -403,7 +405,7 @@ class Onvif extends utils.Adapter {
         .bind(cam)({
           protocol: "RTSP",
           stream: "RTP-Unicast",
-          ProfileToken: profile.$.token,
+          profileToken: profile.$.token,
         })
         .catch((e) => {
           this.log.warn(`${cam.hostname}:${cam.port} No livestream tcp url available: ${e}`);
@@ -412,7 +414,7 @@ class Onvif extends utils.Adapter {
         .bind(cam)({
           protocol: "UDP",
           stream: "RTP-Unicast",
-          ProfileToken: profile.$.token,
+          profileToken: profile.$.token,
         })
         .catch((e) => {
           this.log.warn(`${cam.hostname}:${cam.port} No livestream udp url available: ${e}`);
@@ -421,7 +423,7 @@ class Onvif extends utils.Adapter {
         .bind(cam)({
           protocol: "UDP",
           stream: "RTP-Multicast",
-          ProfileToken: profile.$.token,
+          profileToken: profile.$.token,
         })
         .catch((e) => {
           this.log.warn(`${cam.hostname}:${cam.port} No livestream udp multi url available: ${e}`);
@@ -430,11 +432,40 @@ class Onvif extends utils.Adapter {
         .bind(cam)({
           protocol: "HTTP",
           stream: "RTP-Unicast",
-          ProfileToken: profile.$.token,
+          profileToken: profile.$.token,
         })
         .catch((e) => {
           this.log.warn(`${cam.hostname}:${cam.port} No livestream http url available: ${e}`);
         });
+    }
+    for (const profile of deviceProfiles) {
+      if (streamUris[profile.name].live_stream_tcp) {
+        majorStreamUrl = streamUris[profile.name].live_stream_tcp.uri;
+        break;
+      }
+      if (streamUris[profile.name].live_stream_udp) {
+        majorStreamUrl = streamUris[profile.name].live_stream_udp.uri;
+        break;
+      }
+      if (streamUris[profile.name].live_stream_multicast) {
+        majorStreamUrl = streamUris[profile.name].live_stream_multicast.uri;
+        break;
+      }
+    }
+    //iterate over all profiles from end to beginning
+    for (const profile of deviceProfiles.reverse()) {
+      if (streamUris[profile.name].live_stream_tcp) {
+        minorStreamUrl = streamUris[profile.name].live_stream_tcp.uri;
+        break;
+      }
+      if (streamUris[profile.name].live_stream_udp) {
+        minorStreamUrl = streamUris[profile.name].live_stream_udp.uri;
+        break;
+      }
+      if (streamUris[profile.name].live_stream_multicast) {
+        minorStreamUrl = streamUris[profile.name].live_stream_multicast.uri;
+        break;
+      }
     }
 
     const id = `${cam.hostname}_${cam.port}`.replace(/\./g, "_");
@@ -451,6 +482,8 @@ class Onvif extends utils.Adapter {
       user: cam.username,
       password: cam.password,
       snapshotUrl: snapshotUrl,
+      minorStreamUrl: minorStreamUrl.replace("rtsp://", "rtsp://" + cam.username + ":" + cam.password + "@"),
+      majorStreamUrl: majorStreamUrl.replace("rtsp://", "rtsp://" + cam.username + ":" + cam.password + "@"),
     };
     this.log.debug(`Creating camera ${id} with native ${JSON.stringify(native)} and rinfo ${JSON.stringify(rinfo)}`);
     await this.extendObjectAsync(id, {
@@ -590,34 +623,30 @@ class Onvif extends utils.Adapter {
         this.ffmpeg = require("fluent-ffmpeg");
         const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
         const ffprobePath = require("@ffprobe-installer/ffprobe").path;
-
         this.ffmpeg.setFfmpegPath(ffmpegPath);
         this.ffmpeg.setFfprobePath(ffprobePath);
       }
+      return new Promise((resolve, reject) => {
+        const url = this.config.useHighRes ? native.majorStreamUrl : native.minorStreamUrl || native.majorStreamUrl;
+        const command = this.ffmpeg(url)
+          .inputOptions(["-rtsp_transport tcp"])
+          .addOptions(["-f", "image2", "-vframes", "1"])
+          .on("error", (err) => {
+            this.log.error("An ffmpeg error occurred: " + err.message);
+            reject(err);
+          })
+          .on("end", () => {});
 
-      const command = this.ffmpeg(native.streamUrl)
-        .inputOptions(["-rtsp_transport tcp"])
-        .addOptions(["-flags +global_header", "-c:v", "libwebp", "-update", "1", "-s", "960x540", "-r", "1/5", "-f", "image2", "-y"])
-        .size("1280x720")
-        .on("error", function (err) {
-          console.log("An error occurred: " + err.message);
-        })
-        .on("end", function () {
-          console.log("Processing finished !");
+        const ffstream = command.pipe();
+        const buffers = [];
+        ffstream.on("data", (chunk) => {
+          buffers.push(chunk);
         });
-
-      const ffstream = command.pipe();
-      const buffers = [];
-      ffstream.on("data", function (chunk) {
-        console.log("ffmpeg just wrote " + chunk.length + " bytes");
-        buffers.push(chunk);
+        ffstream.on("end", async () => {
+          const buffer = Buffer.concat(buffers);
+          resolve(buffer);
+        });
       });
-      ffstream.on("end", function () {
-        console.log("ffmpeg end");
-        const buffer = Buffer.concat(buffers);
-        console.log(buffer);
-      });
-      return;
     } else {
       const snapshotUrl = native.snapshotUrl;
       const response = await request(snapshotUrl, {

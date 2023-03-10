@@ -231,6 +231,24 @@
           },
           "default": false
         },
+        "useHighRes": {
+          "newLine": true,
+          "type": "checkbox",
+          "label": {
+            "en": "Using Source with High Resolution for ffmpeg conversion.",
+            "de": "Verwendung von Quelle mit hoher Auflösung für ffmpeg Umwandlung.",
+            "ru": "Использование источника с высоким разрешением для преобразования ffmpeg.",
+            "pt": "Usando Fonte com Alta Resolução para conversão ffmpeg.",
+            "nl": "Source gebruiken met hoge resolutie voor bekering.",
+            "fr": "Utiliser Source avec Haute Résolution pour la conversion de ffmpeg.",
+            "it": "Utilizzando Source con alta risoluzione per la conversione ffmpeg.",
+            "es": "Utilizando Fuente con Alta Resolución para la conversión de ffmpeg.",
+            "pl": "Wykorzystywanie z wysoką Rezolucją na konwersję ffmpeg.",
+            "uk": "Використання джерела з високою роздільною здатністю для перетворення ffmpeg.",
+            "zh-cn": "利用高分辨率转用源。."
+          },
+          "default": false
+        },
         "serverPort": {
           "newLine": true,
           "type": "text",
