@@ -387,86 +387,90 @@ class Onvif extends utils.Adapter {
       .catch((e) => {
         this.log.warn(`No presets found for ${cam.hostname}:${cam.port} ${e}`);
       });
-    let snapshotUrl;
-    let minorStreamUrl;
-    let majorStreamUrl;
+    let snapshotUrl = "";
+    let minorStreamUrl = "";
+    let majorStreamUrl = "";
     const streamUris = {};
-    //find image urls for each profile
-    for (const profile of deviceProfiles) {
-      streamUris[profile.name] = {};
-      streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
-        .bind(cam)({ ProfileToken: profile.$.token })
-        .catch((e) => {
-          this.log.warn(`${cam.hostname}:${cam.port} ${profile.name} No snapshot url available: ${e}`);
-        });
-      if (!snapshotUrl && streamUris[profile.name].snapshotUrl) {
-        snapshotUrl = streamUris[profile.name].snapshotUrl.uri;
+    if (deviceProfiles && deviceProfiles.length > 0) {
+      //find image urls for each profile
+      for (const profile of deviceProfiles) {
+        streamUris[profile.name] = {};
+        streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
+          .bind(cam)({ ProfileToken: profile.$.token })
+          .catch((e) => {
+            this.log.warn(`${cam.hostname}:${cam.port} ${profile.name} No snapshot url available: ${e}`);
+          });
+        if (!snapshotUrl && streamUris[profile.name].snapshotUrl) {
+          snapshotUrl = streamUris[profile.name].snapshotUrl.uri;
+        }
+        streamUris[profile.name].live_stream_tcp = await promisify(cam.getStreamUri)
+          .bind(cam)({
+            protocol: "RTSP",
+            stream: "RTP-Unicast",
+            profileToken: profile.$.token,
+          })
+          .catch((e) => {
+            this.log.warn(`${cam.hostname}:${cam.port} No livestream tcp url available: ${e}`);
+          });
+        streamUris[profile.name].live_stream_udp = await promisify(cam.getStreamUri)
+          .bind(cam)({
+            protocol: "UDP",
+            stream: "RTP-Unicast",
+            profileToken: profile.$.token,
+          })
+          .catch((e) => {
+            this.log.warn(`${cam.hostname}:${cam.port} No livestream udp url available: ${e}`);
+          });
+        streamUris[profile.name].live_stream_multicast = await promisify(cam.getStreamUri)
+          .bind(cam)({
+            protocol: "UDP",
+            stream: "RTP-Multicast",
+            profileToken: profile.$.token,
+          })
+          .catch((e) => {
+            this.log.warn(`${cam.hostname}:${cam.port} No livestream udp multi url available: ${e}`);
+          });
+        streamUris[profile.name].http_stream = await promisify(cam.getStreamUri)
+          .bind(cam)({
+            protocol: "HTTP",
+            stream: "RTP-Unicast",
+            profileToken: profile.$.token,
+          })
+          .catch((e) => {
+            this.log.warn(`${cam.hostname}:${cam.port} No livestream http url available: ${e}`);
+          });
       }
-      streamUris[profile.name].live_stream_tcp = await promisify(cam.getStreamUri)
-        .bind(cam)({
-          protocol: "RTSP",
-          stream: "RTP-Unicast",
-          profileToken: profile.$.token,
-        })
-        .catch((e) => {
-          this.log.warn(`${cam.hostname}:${cam.port} No livestream tcp url available: ${e}`);
-        });
-      streamUris[profile.name].live_stream_udp = await promisify(cam.getStreamUri)
-        .bind(cam)({
-          protocol: "UDP",
-          stream: "RTP-Unicast",
-          profileToken: profile.$.token,
-        })
-        .catch((e) => {
-          this.log.warn(`${cam.hostname}:${cam.port} No livestream udp url available: ${e}`);
-        });
-      streamUris[profile.name].live_stream_multicast = await promisify(cam.getStreamUri)
-        .bind(cam)({
-          protocol: "UDP",
-          stream: "RTP-Multicast",
-          profileToken: profile.$.token,
-        })
-        .catch((e) => {
-          this.log.warn(`${cam.hostname}:${cam.port} No livestream udp multi url available: ${e}`);
-        });
-      streamUris[profile.name].http_stream = await promisify(cam.getStreamUri)
-        .bind(cam)({
-          protocol: "HTTP",
-          stream: "RTP-Unicast",
-          profileToken: profile.$.token,
-        })
-        .catch((e) => {
-          this.log.warn(`${cam.hostname}:${cam.port} No livestream http url available: ${e}`);
-        });
-    }
-    for (const profile of deviceProfiles) {
-      if (streamUris[profile.name].live_stream_tcp) {
-        majorStreamUrl = streamUris[profile.name].live_stream_tcp.uri;
-        break;
+      for (const profile of deviceProfiles) {
+        if (streamUris[profile.name].live_stream_tcp) {
+          majorStreamUrl = streamUris[profile.name].live_stream_tcp.uri;
+          break;
+        }
+        if (streamUris[profile.name].live_stream_udp) {
+          majorStreamUrl = streamUris[profile.name].live_stream_udp.uri;
+          break;
+        }
+        if (streamUris[profile.name].live_stream_multicast) {
+          majorStreamUrl = streamUris[profile.name].live_stream_multicast.uri;
+          break;
+        }
       }
-      if (streamUris[profile.name].live_stream_udp) {
-        majorStreamUrl = streamUris[profile.name].live_stream_udp.uri;
-        break;
+      //iterate over all profiles from end to beginning
+      for (const profile of deviceProfiles.reverse()) {
+        if (streamUris[profile.name].live_stream_tcp) {
+          minorStreamUrl = streamUris[profile.name].live_stream_tcp.uri;
+          break;
+        }
+        if (streamUris[profile.name].live_stream_udp) {
+          minorStreamUrl = streamUris[profile.name].live_stream_udp.uri;
+          break;
+        }
+        if (streamUris[profile.name].live_stream_multicast) {
+          minorStreamUrl = streamUris[profile.name].live_stream_multicast.uri;
+          break;
+        }
       }
-      if (streamUris[profile.name].live_stream_multicast) {
-        majorStreamUrl = streamUris[profile.name].live_stream_multicast.uri;
-        break;
-      }
-    }
-    //iterate over all profiles from end to beginning
-    for (const profile of deviceProfiles.reverse()) {
-      if (streamUris[profile.name].live_stream_tcp) {
-        minorStreamUrl = streamUris[profile.name].live_stream_tcp.uri;
-        break;
-      }
-      if (streamUris[profile.name].live_stream_udp) {
-        minorStreamUrl = streamUris[profile.name].live_stream_udp.uri;
-        break;
-      }
-      if (streamUris[profile.name].live_stream_multicast) {
-        minorStreamUrl = streamUris[profile.name].live_stream_multicast.uri;
-        break;
-      }
+    } else {
+      this.log.warn(`${cam.hostname}:${cam.port} No profiles found to receive snapshot or stream urls`);
     }
 
     const id = `${cam.hostname}_${cam.port}`.replace(/\./g, "_");
@@ -482,10 +486,11 @@ class Onvif extends utils.Adapter {
       hostname: cam.hostname,
       user: cam.username,
       password: cam.password,
-      snapshotUrl: snapshotUrl,
-      minorStreamUrl: minorStreamUrl.replace("rtsp://", "rtsp://" + cam.username + ":" + cam.password + "@"),
-      majorStreamUrl: majorStreamUrl.replace("rtsp://", "rtsp://" + cam.username + ":" + cam.password + "@"),
     };
+
+    snapshotUrl && (native.snapshotUrl = snapshotUrl);
+    majorStreamUrl && (native.majorStreamUrl = majorStreamUrl.replace("rtsp://", "rtsp://" + cam.username + ":" + cam.password + "@"));
+    minorStreamUrl && (native.minorStreamUrl = minorStreamUrl.replace("rtsp://", "rtsp://" + cam.username + ":" + cam.password + "@"));
     this.log.debug(`Creating camera ${id} with native ${JSON.stringify(native)} and rinfo ${JSON.stringify(rinfo)}`);
     await this.extendObjectAsync(id, {
       type: "device",
