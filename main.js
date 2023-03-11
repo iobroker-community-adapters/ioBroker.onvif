@@ -398,7 +398,10 @@ class Onvif extends utils.Adapter {
         streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
           .bind(cam)({ ProfileToken: profile.$.token })
           .catch((e) => {
-            this.log.warn(`${cam.hostname}:${cam.port} ${profile.name} No snapshot url available: ${e}`);
+            this.log.warn(
+              `${cam.hostname}:${cam.port} ${profile.name} No snapshot url available. Try to get it from the stream url via ffmpeg`,
+            );
+            this.log.warn(e);
           });
         if (!snapshotUrl && streamUris[profile.name].snapshotUrl) {
           snapshotUrl = streamUris[profile.name].snapshotUrl.uri;
@@ -624,7 +627,7 @@ class Onvif extends utils.Adapter {
   async getSnapshot(id) {
     const native = this.deviceNatives[id];
     if (!native || !native.snapshotUrl) {
-      this.log.info("No snapshot url found for " + id + " try ffmpeg as fallback");
+      this.log.debug("No snapshot url found for " + id + " try ffmpeg as fallback");
       if (!this.ffmpeg) {
         this.ffmpeg = require("fluent-ffmpeg");
         const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
@@ -708,7 +711,8 @@ class Onvif extends utils.Adapter {
             .then(async (cam) => {
               this.log.info("Device successful initialized via manual search: " + cam.hostname + ":" + cam.port + " with IP " + cam.ip);
               if (!cam.ip) {
-                this.log.info("No IP found, using hostname instead: " + JSON.stringify(cam));
+                this.log.info("No IP found, using hostname instead");
+                this.log.debug(JSON.stringify(cam));
                 cam.ip = cam.hostname;
               }
               const native = await this.fetchCameraInfos(cam, { address: cam.ip });
