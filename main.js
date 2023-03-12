@@ -673,23 +673,23 @@ class Onvif extends utils.Adapter {
             })
               .then((response) => {
                 if (response.status >= 400) {
-                  this.log.error("Error getting snapshot via digest: " + response);
+                  this.log.error("Error getting snapshot via digest: " + JSON.stringify(response));
                   return;
                 }
                 return response.data;
               })
               .catch((e) => {
-                this.log.error("Error getting snapshot via basic: " + e);
+                this.log.error("Error getting snapshot via basic: " + JSON.stringify(e));
               });
           }
           if (response.status >= 400) {
-            this.log.error("Error getting snapshot basic: " + response);
+            this.log.error("Error getting snapshot basic: " + JSON.stringify(response));
             return;
           }
           return response.data;
         })
         .catch((e) => {
-          this.log.error("Error getting snapshot: " + e);
+          this.log.error("Error getting snapshot: " + JSON.stringify(e));
         });
       return response;
     }
