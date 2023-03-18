@@ -261,6 +261,31 @@
       "newLine": true,
       "type": "panel",
       "items": {
+        "_serverHint": {
+          "type": "staticLink",
+          "newLine": true,
+          "sm": 12,
+          "label": {
+            "en": "Guide to add stream in to Vis with low CPU load",
+            "de": "Anleitung zum Hinzufügen von Stream in Vis mit niedriger CPU-Last",
+            "ru": "Руководство для добавления потока в Vis с низкой загрузкой CPU",
+            "pt": "Guia para adicionar fluxo em Vis com baixa carga de CPU",
+            "nl": "Guide voegt stroom toe in Vis met weinig CPU lading",
+            "fr": "Guide pour ajouter du flux à Vis avec une charge CPU faible",
+            "it": "Guida per aggiungere flusso a Vis con carico CPU basso",
+            "es": "Guía para agregar flujo a Vis con carga CPU baja",
+            "pl": "Przewodnik dodać strumienie w Vis z niskim obciążeniem procesora",
+            "uk": "Керівництво для додавання потоку в Vis з низьким завантаженням процесора",
+            "zh-cn": "增加单位低负荷的别人流动指南"
+          },
+          "button": true,
+          "href": "https://github.com/iobroker-community-adapters/ioBroker.onvif#stream-in-vis-einbinden",
+          "style": {
+            "paddingTop": 50,
+            "fontWeight": "bold",
+            "font-size": "1rem"
+          }
+        },
         "overwriteSnapshotPort": {
           "newLine": true,
           "type": "checkbox",
