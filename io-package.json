@@ -91,6 +91,7 @@
     "password": "admin",
     "activateServer": false,
     "useHighRes": false,
+    "overwriteSnapshotPort": false,
     "serverPort": 8095
   },
   "messages": [

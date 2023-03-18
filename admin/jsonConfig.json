@@ -256,6 +256,30 @@
           "default": "8095"
         }
       }
+    },
+    "_settings": {
+      "newLine": true,
+      "type": "panel",
+      "items": {
+        "overwriteSnapshotPort": {
+          "newLine": true,
+          "type": "checkbox",
+          "label": {
+            "en": "Overwrite snapshot url port with camera port",
+            "de": "Überschreiben Snapshot url port mit kamera port",
+            "ru": "Переписать снимок URL порт с портом камеры",
+            "pt": "Sobrescrever a porta de URL do instantâneo com a porta da câmera",
+            "nl": "Overschrijving breekshot url port met cameraport",
+            "fr": "Overwrite snapshot port d'url avec port de caméra",
+            "it": "Porta url snapshot sovrascrittura con porta della fotocamera",
+            "es": "Sobreescribir el puerto url instantánea con puerto de cámara",
+            "pl": "Overwrite snapshot url port z kamerą portową",
+            "uk": "Overwrite snapshot url порт з портом камери",
+            "zh-cn": "装有摄像机港口的外展"
+          },
+          "default": false
+        }
+      }
     }
   }
 }

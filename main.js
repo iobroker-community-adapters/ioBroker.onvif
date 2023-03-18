@@ -175,7 +175,7 @@ class Onvif extends utils.Adapter {
       this.sendSentry(event);
       return;
     }
-    if (!event.message.message.data.simpleItem || !event.message.message.data.simpleItem.$) {
+    if (!event.message.message.data || !event.message.message.data.simpleItem || !event.message.message.data.simpleItem.$) {
       this.log.warn("Event without event.message.message.data.simpleItem.$: " + JSON.stringify(event));
       this.sendSentry(event);
       return;
@@ -204,12 +204,7 @@ class Onvif extends utils.Adapter {
       const sentryInstance = this.getPluginInstance("sentry");
       if (sentryInstance) {
         const Sentry = sentryInstance.getSentryObject();
-        Sentry &&
-          Sentry.withScope((scope) => {
-            scope.setLevel("info");
-            scope.setExtra("key", "value");
-            Sentry.captureMessage("Event", JSON.stringify(event));
-          });
+        Sentry && Sentry.captureMessage("Wrong Event", { extra: { message: JSON.stringify(event) }, level: "info" });
       }
     }
   }
@@ -405,6 +400,12 @@ class Onvif extends utils.Adapter {
           });
         if (!snapshotUrl && streamUris[profile.name].snapshotUrl) {
           snapshotUrl = streamUris[profile.name].snapshotUrl.uri;
+          if (this.config.overwriteSnapshotPort) {
+            //find generic port in url and replace it
+            const urlObject = new URL(snapshotUrl);
+            urlObject.port = cam.port;
+            snapshotUrl = urlObject.toString();
+          }
         }
         streamUris[profile.name].live_stream_tcp = await promisify(cam.getStreamUri)
           .bind(cam)({
@@ -626,6 +627,10 @@ class Onvif extends utils.Adapter {
   }
   async getSnapshot(id) {
     const native = this.deviceNatives[id];
+    if (!native) {
+      this.log.error("No native found for cam " + id + " cannot get snapshot");
+      return;
+    }
     if (!native || !native.snapshotUrl) {
       this.log.debug("No snapshot url found for " + id + " try ffmpeg as fallback");
       if (!this.ffmpeg) {
@@ -637,6 +642,12 @@ class Onvif extends utils.Adapter {
       }
       return new Promise((resolve, reject) => {
         const url = this.config.useHighRes ? native.majorStreamUrl : native.minorStreamUrl || native.majorStreamUrl;
+        if (!url) {
+          this.log.error("No stream url found for " + id + " cannot get snapshot. Delete cam under objects and restart adapter");
+          resolve(null);
+          return;
+        }
+
         const command = this.ffmpeg(url)
           .inputOptions(["-rtsp_transport tcp"])
           .addOptions(["-f", "image2", "-vframes", "1"])
@@ -744,8 +755,12 @@ class Onvif extends utils.Adapter {
     const cleanOldVersion = await this.getObjectAsync("oldVersionCleaned");
     if (!cleanOldVersion) {
       this.log.info("Clean old version devices");
-
-      await this.delObjectAsync("", { recursive: true });
+      try {
+        await this.delObjectAsync("", { recursive: true });
+      } catch (error) {
+        this.log.error("Error cleaning old version devices: " + error);
+        this.log.info("Please update node and js-controller to latest version");
+      }
       await this.setObjectNotExistsAsync("oldVersionCleaned", {
         type: "state",
         common: {
