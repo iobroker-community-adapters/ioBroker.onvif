@@ -260,6 +260,19 @@
     "_settings": {
       "newLine": true,
       "type": "panel",
+      "label": {
+        "en": "General",
+        "de": "Allgemeines",
+        "ru": "Генерал",
+        "pt": "Aspectos gerais",
+        "nl": "Generaal",
+        "fr": "Généralités",
+        "it": "Generale",
+        "es": "General",
+        "pl": "Generalny",
+        "uk": "Головна",
+        "zh-cn": "A. 概况"
+      },
       "items": {
         "_serverHint": {
           "type": "staticLink",
