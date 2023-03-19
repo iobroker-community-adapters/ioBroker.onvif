@@ -89,9 +89,11 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
 
 # Stream in vis einbinden
 
+Wenn Stream in Apple Homekit angezeigt werden soll dann bitte direkt in yahka eine camera erzeugen. Wenn das nicht funktioniert oder hksv benötigt wird, dann scrypted in einem docker installieren und die Kamera mit onvif und homekit plugin hinzufügen
+
 ## Rtsp2Web Docker
 
-Ein Stream wird normalerweise via rtsp stream bereitgestellt. Eine Umwandlung via motion eye ist sehr resourcen aufwändig und hat ein Verzögerng. Ein Umwandlung in webrtc ist schneller und Resourcenschonender. Meine Empfehlung ist ein [RTSPtoWeb](https://github.com/deepch/RTSPtoWeb). Dazu muss ein Docker von ghcr.io/deepch/rtsptoweb:latest erstellt werden.
+Ein Stream wird normalerweise via rtsp stream bereitgestellt. Eine Umwandlung via motion eye ist sehr resourcen aufwändig und hat ein Verzögerng. Ein Umwandlung in webrtc ist schneller und resourcenschonender. Meine Empfehlung ist ein [RTSPtoWeb](https://github.com/deepch/RTSPtoWeb). Dazu muss ein Docker von ghcr.io/deepch/rtsptoweb:latest erstellt werden.
 
 ```
 docker run --name rtsp-to-web -v /YOURPATHFORCONFIG:/config --network host ghcr.io/deepch/rtsptoweb:latest
@@ -117,7 +119,10 @@ Dann kann man ein Stream hinzufügen. Die Stream url findet man z.B. unter
 ## Einzelnen Stream in der Vis einfügen
 
 Dann in der vis ein HTML Objekt auswählen. Dann im Widget unter HTML den rtsp2web server mit stream id eintragen:
+
 <img src="html.png" height="150">
+
+## **Wenn mehrere Stream hinzugefügt werden soll muss `webrtc-url` und `webrtc-video` in html und skript mit einer neuen id ersetzt werden z.B. `webrtc-url2` und `webrtc-video2`**
 
 ```html
 <input
@@ -313,6 +318,8 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
 
 # Include stream in vis
 
+If stream should be displayed in Apple Homekit then please create a camera directly in yahka. If that doesn't work or hksv is needed then install scrypted in a docker and add the camera with onvif and homekit plugin
+
 ## Rtsp2Web Docker
 
 A stream is normally provided via rtsp stream. This needs to be converted for vis. My recommendation is a [RTSPtoWeb](https://github.com/deepch/RTSPtoWeb). This requires creating a docker from ghcr.io/deepch/rtsptoweb:latest.
@@ -348,6 +355,8 @@ Then you can add a stream. The stream url can be found e.g. under
 Then select an HTML object in the vis. Then in the widget under HTML enter the rtsp2web server with stream id:
 
 <img src="html.png" height="150">
+
+## **If more than one stream should be added `webrtc-url` and `webrtc-video` must be replaced in html and script with a new id e.g. `webrtc-url2` and `webrtc-video2`.**
 
 ```html
 <input type="hidden name="webrtc-url" id="webrtc-url"

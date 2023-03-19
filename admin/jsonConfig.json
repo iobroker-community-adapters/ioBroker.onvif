@@ -273,13 +273,36 @@
         "zh-cn": "A. 概况"
       },
       "items": {
-        "_serverHint": {
+        "_generalInfo": {
+          "type": "staticText",
+          "newLine": true,
+          "sm": 12,
+          "text": {
+            "en": "General",
+            "de": "Allgemeines",
+            "ru": "Генерал",
+            "pt": "Aspectos gerais",
+            "nl": "Generaal",
+            "fr": "Généralités",
+            "it": "Generale",
+            "es": "General",
+            "pl": "Generalny",
+            "uk": "Головна",
+            "zh-cn": "A. 概况"
+          },
+          "style": {
+            "paddingTop": 50,
+            "fontWeight": "bold",
+            "font-size": "1rem"
+          }
+        },
+        "_readMeHint": {
           "type": "staticLink",
           "newLine": true,
           "sm": 12,
           "label": {
             "en": "Guide to add stream in to Vis with low CPU load",
-            "de": "Anleitung zum Hinzufügen von Stream in Vis mit niedriger CPU-Last",
+            "de": "Anleitung zum Hinzufügen von Live-Stream in Vis mit niedriger CPU-Last",
             "ru": "Руководство для добавления потока в Vis с низкой загрузкой CPU",
             "pt": "Guia para adicionar fluxo em Vis com baixa carga de CPU",
             "nl": "Guide voegt stroom toe in Vis met weinig CPU lading",
