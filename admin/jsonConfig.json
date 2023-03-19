@@ -259,7 +259,19 @@
     },
     "_settings": {
       "type": "panel",
-      "label": "Allgemein",
+      "label": {
+        "en": "General",
+        "de": "Allgemeines",
+        "ru": "Генерал",
+        "pt": "Aspectos gerais",
+        "nl": "Generaal",
+        "fr": "Généralités",
+        "it": "Generale",
+        "es": "General",
+        "pl": "Generalny",
+        "uk": "Головна",
+        "zh-cn": "A. 概况"
+      },
       "items": {
         "_serverHint": {
           "type": "staticLink",
@@ -278,7 +290,7 @@
             "uk": "Керівництво для додавання потоку в Vis з низьким завантаженням процесора",
             "zh-cn": "增加单位低负荷的别人流动指南"
           },
-          "button": true,
+          "button": false,
           "href": "https://github.com/iobroker-community-adapters/ioBroker.onvif#stream-in-vis-einbinden",
           "style": {
             "paddingTop": 50,
