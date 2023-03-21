@@ -64,9 +64,7 @@ class Onvif extends utils.Adapter {
         .catch(async (error) => {
           this.log.error(`Data: ${error.data} XML: ${error.xml}`);
           this.log.error(`Error initializing device: ${error.err} device: ${JSON.stringify(device.native)}`);
-          this.log.error(
-            `You can change user and password under object and edit device or delete device under objects and restart adapter`,
-          );
+          this.log.error(`You can change user and password under object and edit device or delete device under objects and restart adapter`);
           this.log.error(error.err.stack);
           return null;
         });
@@ -175,17 +173,60 @@ class Onvif extends utils.Adapter {
       this.sendSentry(event);
       return;
     }
-    if (!event.message.message.data || !event.message.message.data.simpleItem || !event.message.message.data.simpleItem.$) {
+    if (event.message.message.source && event.message.message.source.simpleItem) {
+      if (Array.isArray(event.message.message.source.simpleItem)) {
+        for (const item of event.message.message.source.simpleItem) {
+          let sourceName = item.$.Name;
+          sourceName = sourceName.replace(/\./g, "_");
+          let sourceValue = item.$.Value;
+          if (typeof sourceValue === "object") {
+            sourceValue = JSON.stringify(sourceValue);
+          }
+          await this.setEventState(device, id + "_" + sourceName, sourceName, sourceValue);
+        }
+      } else {
+        sourceName = event.message.message.source.simpleItem.$.Name;
+        sourceValue = event.message.message.source.simpleItem.$.Value;
+        let sourceName = item.$.Name;
+        sourceName = sourceName.replace(/\./g, "_");
+        let sourceValue = item.$.Value;
+        if (typeof sourceValue === "object") {
+          sourceValue = JSON.stringify(sourceValue);
+        }
+        await this.setEventState(device, id, sourceName, sourceValue);
+      }
+    }
+    if (event.message.message.data && event.message.message.data.simpleItem) {
+      if (Array.isArray(event.message.message.data.simpleItem)) {
+        for (const item of cevent.message.message.data.simpleItem) {
+          let sourceName = item.$.Name;
+          sourceName = sourceName.replace(/\./g, "_");
+          let sourceValue = item.$.Value;
+          if (typeof sourceValue === "object") {
+            sourceValue = JSON.stringify(sourceValue);
+          }
+          await this.setEventState(device, id + "_" + sourceName, sourceName, sourceValue);
+        }
+      } else {
+        let value = event.message.message.data.simpleItem.$.Value;
+        let name = event.message.message.data.simpleItem.$.Name;
+        name = name.replace(/\./g, "_");
+        if (typeof value === "object") {
+          value = JSON.stringify(value);
+        }
+        await this.setEventState(device, id, name, value);
+      }
+    } else if (event.message.message.data && event.message.message.data.elementItem) {
+      let dataName = "elementItem";
+      let dataValue = JSON.stringify(camMessage.message.message.data.elementItem);
+      await this.setEventState(device, id, dataName, dataValue);
+    } else {
       this.log.warn("Event without event.message.message.data.simpleItem.$: " + JSON.stringify(event));
       this.sendSentry(event);
       return;
     }
-    let value = event.message.message.data.simpleItem.$.Value;
-    let name = event.message.message.data.simpleItem.$.Name;
-    name = name.replace(/\./g, "_");
-    if (typeof value === "object") {
-      value = JSON.stringify(value);
-    }
+  }
+  async setEventState(device, id, name, value) {
     await this.extendObjectAsync(device.native.id + ".events." + id, {
       type: "state",
       common: {
@@ -199,6 +240,7 @@ class Onvif extends utils.Adapter {
     });
     await this.setStateAsync(device.native.id + ".events." + id, value, true);
   }
+
   sendSentry(event) {
     if (this.supportsFeature && this.supportsFeature("PLUGINS")) {
       const sentryInstance = this.getPluginInstance("sentry");
@@ -275,14 +317,12 @@ class Onvif extends utils.Adapter {
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
         if (this.devices[rinfo.address]) {
           this.log.info(
-            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`,
+            `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`
           );
           return;
         }
 
-        this.log.info(
-          `Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password),
-        );
+        this.log.info(`Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password));
         await this.initDevice({
           ip: rinfo.address,
           port: cam.port,
@@ -299,11 +339,7 @@ class Onvif extends utils.Adapter {
           })
           .catch((error) => {
             this.log.error(
-              `Failed to login to ${rinfo.address}:${cam.port}` +
-                " with " +
-                this.config.user +
-                ":" +
-                this.maskPassword(this.config.password),
+              `Failed to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password)
             );
             this.log.error("Error " + error.err);
             this.log.debug(error.err.stack);
@@ -393,9 +429,7 @@ class Onvif extends utils.Adapter {
         streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
           .bind(cam)({ ProfileToken: profile.$.token })
           .catch((e) => {
-            this.log.warn(
-              `${cam.hostname}:${cam.port} ${profile.name} No snapshot url available. Try to get it from the stream url via ffmpeg`,
-            );
+            this.log.warn(`${cam.hostname}:${cam.port} ${profile.name} No snapshot url available. Try to get it from the stream url via ffmpeg`);
             this.log.warn(e);
           });
         if (!snapshotUrl && streamUris[profile.name].snapshotUrl) {
@@ -609,7 +643,7 @@ class Onvif extends utils.Adapter {
           }
           // @ts-ignore
           resolve(this);
-        },
+        }
       );
       // @ts-ignore
       cam.on("rawResponse", (data) => {
@@ -854,13 +888,9 @@ class Onvif extends utils.Adapter {
             obj.from,
             obj.command,
             {
-              result: `Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(
-                this.discoveredDevices,
-                null,
-                2,
-              )}. See log for details`,
+              result: `Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(this.discoveredDevices, null, 2)}. See log for details`,
             },
-            obj.callback,
+            obj.callback
           );
       }
       if (obj.command === "manualSearch") {
@@ -874,7 +904,7 @@ class Onvif extends utils.Adapter {
             obj.from,
             obj.command,
             { result: `Found ${deviceArray.length} cameras: ${JSON.stringify(deviceArray, null, 2)}` },
-            obj.callback,
+            obj.callback
           );
       }
       if (obj.command === "snapshot") {
