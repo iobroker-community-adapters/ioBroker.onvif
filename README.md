@@ -529,6 +529,10 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
 
 ## Changelog
 
+### 1.0.5
+
+- Improve event handling
+
 ### 1.0.4
 
 - (TA2k) Minor bugfixes and readme update for livestream in vis

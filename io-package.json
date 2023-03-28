@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "news": {
+      "1.0.5": {
+        "en": "Improve event handling",
+        "de": "Verbesserte Ereignisbehandlung"
+      },
       "1.0.4": {
         "en": "Minor bugfixes and readme update for livestream in vis",
         "de": "Kleine Fehlerbehebungen und Readme-Update für Livestream in Vis"
