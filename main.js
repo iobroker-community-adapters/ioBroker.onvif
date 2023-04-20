@@ -525,9 +525,15 @@ class Onvif extends utils.Adapter {
     }
 
     const id = `${cam.hostname}_${cam.port}`.replace(/\./g, "_");
-    let name = deviceInformation ? deviceInformation.manufacturer || "" : "";
-    name += " " + deviceInformation ? deviceInformation.model || "" : "";
-    name += " " + cam.hostname + ":" + cam.port;
+    let name = "";
+    if (deviceInformation && deviceInformation.manufacturer) {
+      name += deviceInformation.manufacturer + " ";
+    }
+    if (deviceInformation && deviceInformation.model) {
+      name += deviceInformation.model + " ";
+    }
+
+    name += cam.hostname + ":" + cam.port;
 
     const native = {
       id: id,
