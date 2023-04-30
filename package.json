@@ -26,7 +26,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "json2iob": "^2.4.2",
     "onvif": "^0.6.8",
-    "urllib": "^2.40.0",
+    "urllib": "^3.13.2",
     "xml2js": "^0.5.0"
   },
   "devDependencies": {
