@@ -1,9 +1,9 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "news": {
-      "1.0.6": {
+      "1.0.7": {
         "en": "Improve device information parsing",
         "de": "Verbesserte Geräteinformationen Parsing"
       },
