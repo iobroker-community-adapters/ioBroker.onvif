@@ -338,6 +338,24 @@
             "zh-cn": "装有摄像机港口的外展"
           },
           "default": false
+        },
+        "overwritePort": {
+          "newLine": true,
+          "type": "number",
+          "label": {
+            "en": "Use custom port for snapshot url",
+            "de": "Verwenden Sie benutzerdefinierten Port für Snapshot url",
+            "ru": "Используйте пользовательский порт для Snapshot url",
+            "pt": "Use a porta personalizada para a URL do instantâneo",
+            "nl": "Gebruik de gebruikelijke haven voor foto's",
+            "fr": "Utilisez le port personnalisé pour snapshot url",
+            "it": "Utilizzare la porta personalizzata per snapshot url",
+            "es": "Utilice el puerto personalizado para el url de instantánea",
+            "pl": "Wykorzystywanie odpowiedniego portu dla urku",
+            "uk": "Використовуйте користувальницький порт для знімків URL",
+            "zh-cn": "A. 使用习惯港口进行扫描"
+          },
+          "default": ""
         }
       }
     }

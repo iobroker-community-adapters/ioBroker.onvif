@@ -104,7 +104,8 @@
     "activateServer": false,
     "useHighRes": false,
     "overwriteSnapshotPort": false,
-    "serverPort": 8095
+    "serverPort": 8095,
+    "overwritePort": null
   },
   "messages": [
     {

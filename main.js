@@ -447,6 +447,9 @@ class Onvif extends utils.Adapter {
             try {
               const urlObject = new URL(snapshotUrl);
               urlObject.port = cam.port;
+              if (this.config.overwritePort) {
+                urlObject.port = this.config.overwritePort;
+              }
               snapshotUrl = urlObject.toString();
             } catch (error) {
               this.log.error("Failed to parse snapshot url" + snapshotUrl);
