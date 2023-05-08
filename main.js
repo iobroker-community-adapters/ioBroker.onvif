@@ -416,8 +416,8 @@ class Onvif extends utils.Adapter {
     const status = await promisify(cam.getStatus)
       .bind(cam)()
       .catch((e, data, xml) => {
-        this.log.error(`Data: ${JSON.stringify(data)} xml: ${xml}`);
-        this.log.error(`No status found for ${cam.hostname}:${cam.port} ${e}`);
+        this.log.debug(`Data: ${JSON.stringify(data)} xml: ${xml}`);
+        this.log.debug(`No status found for ${cam.hostname}:${cam.port} ${e}`);
       });
     const presets = await promisify(cam.getPresets)
       .bind(cam)()
