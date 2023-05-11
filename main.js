@@ -687,6 +687,13 @@ class Onvif extends utils.Adapter {
       this.log.error("No native found for cam " + id + " cannot get snapshot");
       return;
     }
+    //check last snapshot was more than 5 seconds ago
+    if (native.lastSnapshot && native.lastSnapshot + 500 > Date.now()) {
+      this.log.debug("Last snapshot was less than 0.5 seconds ago. Skip snapshot");
+      return;
+    }
+    this.deviceNatives[id].lastSnapshot = Date.now();
+
     if (!native || !native.snapshotUrl) {
       this.log.debug("No snapshot url found for " + id + " try ffmpeg as fallback");
       if (!this.ffmpeg) {
