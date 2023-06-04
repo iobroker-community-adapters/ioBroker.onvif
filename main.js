@@ -1010,6 +1010,10 @@ class Onvif extends utils.Adapter {
         }
 
         if (command === "gotoPreset") {
+          if (!cam) {
+            this.log.warn("No camera found for " + deviceId + " with ip " + deviceObject.native.ip);
+            return;
+          }
           await promisify(cam[command])
             .bind(cam)({ preset: state.val })
             .then((res) => {
@@ -1021,6 +1025,10 @@ class Onvif extends utils.Adapter {
           return;
         }
         if (cam[command]) {
+          if (!cam) {
+            this.log.warn("No camera found for " + deviceId + " with ip " + deviceObject.native.ip);
+            return;
+          }
           await promisify(cam[command])
             .bind(cam)({})
             .then((res) => {
