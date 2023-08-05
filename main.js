@@ -9,9 +9,9 @@
 const utils = require("@iobroker/adapter-core");
 const { request } = require("urllib");
 const Json2iob = require("json2iob");
-const Cam = require("./lib/onvif").Cam;
+const Cam = require("onvif").Cam;
 const xml2js = require("xml2js");
-const Discovery = require("./lib/onvif").Discovery;
+const Discovery = require("onvif").Discovery;
 const { promisify } = require("util");
 const http = require("http");
 
