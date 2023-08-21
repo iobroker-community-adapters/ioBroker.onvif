@@ -24,7 +24,7 @@
     "@ffprobe-installer/ffprobe": "^2.1.1",
     "@iobroker/adapter-core": "^3.0.3",
     "fluent-ffmpeg": "^2.1.2",
-    "json2iob": "^2.4.5",
+    "json2iob": "^2.4.6",
     "onvif": "github:agsh/onvif#0d686126059f867c32a46bb72f4736e91c155cc6",
     "urllib": "^3.17.1",
     "xml2js": "^0.6.2"
