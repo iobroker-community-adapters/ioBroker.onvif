@@ -95,12 +95,17 @@ class Onvif extends utils.Adapter {
       await this.startServer();
     }
     //reconnnect all cameras every 30min to prevent undetected disconnects and event lost
-    this.reconnectInterval = this.setInterval(() => {
-      this.reconnectAllCameras();
-    }, 1000 * 30 * 60);
+    this.reconnectInterval = this.setInterval(
+      () => {
+        this.reconnectAllCameras();
+      },
+      1000 * 30 * 60,
+    );
+    this.log.debug("Reconnect interval set.  Next reconnect: " + new Date(Date.now() + 1000 * 30 * 60));
   }
 
   async reconnectAllCameras() {
+    this.log.debug("Reconnecting all cameras " + this.deviceNatives.length);
     for (const deviceId in this.deviceNatives) {
       const camNative = this.deviceNatives[deviceId];
       this.log.debug(`Reconnecting to ${deviceId}`);
