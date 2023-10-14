@@ -105,7 +105,7 @@ class Onvif extends utils.Adapter {
   }
 
   async reconnectAllCameras() {
-    this.log.debug("Reconnecting all cameras " + this.deviceNatives.length);
+    this.log.debug("Reconnecting all cameras " + Object.keys(this.deviceNatives).length);
     for (const deviceId in this.deviceNatives) {
       const camNative = this.deviceNatives[deviceId];
       this.log.debug(`Reconnecting to ${deviceId}`);
