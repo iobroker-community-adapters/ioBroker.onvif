@@ -532,10 +532,10 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### 1.1.1-alpha.0 (2023-10-18)
+### **WORK IN PROGRESS**
 
-- (mcm1957) standard iobroker release environment has been added
-- (mcm1957) some dependencies have been updated
+- (mcm1957) Standard iobroker release environment has been added.
+- (mcm1957) Some dependencies have been updated.
 
 ### 1.1.0
 
