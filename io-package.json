@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.1.0",
+    "version": "1.1.1-alpha.0",
     "news": {
+      "1.1.1-alpha.0": {
+        "en": "standard iobroker release environment has been added\nsome dependencies have been updated",
+        "de": "Standard iobroker Release-Umgebung wurde hinzugefügt\nEinige Abhängigkeiten wurden aktualisiert",
+        "ru": "добавлена стандартная среда релиза iobroker\nнекоторые зависимости были обновлены",
+        "pt": "padrão iobroker liberação ambiente foi adicionado\nalgumas dependências foram atualizadas",
+        "nl": "standaard iobroker vrijlating is toegevoegd\nsommige afhankelijkheid is geüpload",
+        "fr": "iobroker standard environnement de libération a été ajouté\ncertaines dépendances ont été mises à jour",
+        "it": "standard iobroker rilascio ambiente è stato aggiunto\nalcune dipendenze sono state aggiornate",
+        "es": "estándar ambiente de liberación de iobroker se ha añadido\nse han actualizado algunas dependencias",
+        "pl": "dodano do użytku standardowe iobraźnię\nniektóre zależności zostały zaktualizowane",
+        "uk": "додано стандартне середовище вивільнення iobroker\nдеякі залежності були оновлено",
+        "zh-cn": "添加了标准碘器释放环境\n已经更新了一些依赖性"
+      },
       "1.1.0": {
         "en": "Bugfixes",
         "de": "Fehlerbehebungen"
@@ -26,19 +39,6 @@
       "1.0.2": {
         "en": "Fixed a reonnect and empty event bug",
         "de": "Fehler bei der Wiederverbindung und leerem Events behoben"
-      },
-      "1.0.1": {
-        "en": "New Adapter. Adapter was rewritten please read the new README",
-        "de": "Neuer Adapter. Adapter wurde neu geschrieben, bitte lesen Sie die neue README",
-        "ru": "Новый адаптер. Адаптер был переписан, пожалуйста, прочитайте новый README",
-        "pt": "Novo adaptador. Adapter foi reescrito por favor leia o novo README",
-        "nl": "Nieuwe Adapter. Adapter is herschreven, lees alsjeblieft de nieuwe ReadME",
-        "fr": "Nouveau Adaptateur. L'adaptateur a été réécrit s'il vous plaît lire la nouvelle README",
-        "it": "Nuovo adattatore. L'adattatore è stato riscritto si prega di leggere il nuovo README",
-        "es": "Nuevo Adaptador. Adaptador fue reescrito por favor lea el nuevo README",
-        "pl": "New Adapter (ang.). Adapter został ponownie napisany i odczytany jako nowy README",
-        "uk": "Новий адаптер. Переписаний адаптер, будь ласка, ознайомтесь з новим README",
-        "zh-cn": "新协定。 希望改写新版的中小企业"
       }
     },
     "titleLang": {
@@ -67,8 +67,13 @@
       "uk": "Адаптер для фотокамер",
       "zh-cn": "onvif 相机适配器"
     },
-    "authors": ["TA2k <tombox2020@gmail.com>"],
-    "keywords": ["onvif", "camera"],
+    "authors": [
+      "TA2k <tombox2020@gmail.com>"
+    ],
+    "keywords": [
+      "onvif",
+      "camera"
+    ],
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "main": "main.js",
@@ -102,7 +107,9 @@
       }
     ]
   },
-  "protectedNative": ["password"],
+  "protectedNative": [
+    "password"
+  ],
   "native": {
     "user": "admin",
     "password": "admin",
@@ -116,7 +123,10 @@
     {
       "condition": {
         "operand": "and",
-        "rules": ["oldVersion<1.0.0", "newVersion>=1.0.0"]
+        "rules": [
+          "oldVersion<1.0.0",
+          "newVersion>=1.0.0"
+        ]
       },
       "title": {
         "en": "Important notice!",
@@ -144,7 +154,10 @@
         "zh-cn": "适应者完全被改写,活动物品也发生了变化。 更新后,所有公认的摄像机都被删除,必须再次发现。."
       },
       "level": "warn",
-      "buttons": ["agree", "cancel"]
+      "buttons": [
+        "agree",
+        "cancel"
+      ]
     }
   ],
   "objects": [],
