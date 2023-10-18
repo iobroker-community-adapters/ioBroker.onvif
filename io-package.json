@@ -4,7 +4,8 @@
     "version": "1.1.0",
     "news": {
       "1.1.0": {
-        "en": "Bugfixes"
+        "en": "Bugfixes",
+        "de": "Fehlerbehebungen"
       },
       "1.0.7": {
         "en": "Improve device information parsing",
@@ -63,6 +64,7 @@
       "it": "Adattatore per telecamere onvif",
       "es": "Adaptador para cámaras onvif",
       "pl": "Adapter do kamer onvif",
+      "uk": "Адаптер для фотокамер",
       "zh-cn": "onvif 相机适配器"
     },
     "authors": ["TA2k <tombox2020@gmail.com>"],
