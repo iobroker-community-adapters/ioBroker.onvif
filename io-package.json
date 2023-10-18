@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.1.1-alpha.0",
+    "version": "1.1.1",
     "news": {
+      "1.1.1": {
+        "en": "Standard iobroker release environment has been added.\nSome dependencies have been updated.",
+        "de": "Es wurde die Standard ioBroker Release Umgebung hinzugefügt.\nEinige Abhängigkeiten wurden aktualisiert.",
+        "ru": "Добавлена стандартная среда релиза iobroker.\nНекоторые зависимости были обновлены.",
+        "pt": "O ambiente padrão de liberação do iobroker foi adicionado.\nAlgumas dependências foram atualizadas.",
+        "nl": "Standaard iobroker vrijlating is toegevoegd.\nSommige afhankelijkheden zijn geüpdateerd.",
+        "fr": "L'environnement de libération standard d'iobroker a été ajouté.\nCertaines dépendances ont été mises à jour.",
+        "it": "L'ambiente standard di rilascio dello iobroker è stato aggiunto.\nAlcune dipendenze sono state aggiornate.",
+        "es": "Se ha añadido un entorno de liberación estándar de iobroker.\nSe han actualizado algunas dependencias.",
+        "pl": "Dodano do użytku podstawowe iobrokerowe środowisko.\nNiektóre zależności zostały zaktualizowane.",
+        "uk": "Додано стандартне середовище вивільнення йоброкера.\nДеякі залежності були оновлено.",
+        "zh-cn": "标准简化者释放环境已经增加。.\n已经更新了一些依赖情况。."
+      },
       "1.1.1-alpha.0": {
         "en": "standard iobroker release environment has been added\nsome dependencies have been updated",
         "de": "Standard iobroker Release-Umgebung wurde hinzugefügt\nEinige Abhängigkeiten wurden aktualisiert",
@@ -35,10 +48,6 @@
       "1.0.3": {
         "en": "Minor bugfixes",
         "de": "Kleine Fehlerbehebungen"
-      },
-      "1.0.2": {
-        "en": "Fixed a reonnect and empty event bug",
-        "de": "Fehler bei der Wiederverbindung und leerem Events behoben"
       }
     },
     "titleLang": {
