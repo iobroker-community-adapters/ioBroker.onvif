@@ -436,6 +436,8 @@ class Onvif extends utils.Adapter {
     if (deviceProfiles && deviceProfiles.length > 0) {
       //find image urls for each profile
       for (const profile of deviceProfiles) {
+        //replace dots and quotes in profile name
+        profile.name = profile.name.replace(/\./g, "_").replace(/"/g, "");
         streamUris[profile.name] = {};
         streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
           .bind(cam)({ ProfileToken: profile.$.token })
