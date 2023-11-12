@@ -753,6 +753,7 @@ class Onvif extends utils.Adapter {
               .then((response) => {
                 if (response.status >= 400) {
                   this.log.error("Error getting snapshot via digest: " + JSON.stringify(response));
+                  this.log.error(Buffer.from(response.data).toString());
                   return;
                 }
                 return response.data;
