@@ -96,6 +96,9 @@ Wenn Stream in Apple Homekit angezeigt werden soll dann bitte direkt in yahka ei
 Ein Stream wird normalerweise via rtsp stream bereitgestellt. Eine Umwandlung via motion eye ist sehr resourcen aufwändig und hat ein Verzögerng. Ein Umwandlung in webrtc ist schneller und resourcenschonender. Meine Empfehlung ist ein [go2rtsp](https://github.com/AlexxIT/go2rtc). Dazu muss ein Docker von alexxit/go2rtc erstellt werden.
 https://hub.docker.com/r/alexxit/go2rtc
 
+Es gibt auch eine Version mit Hardware Unterstützung:
+https://github.com/AlexxIT/go2rtc/wiki/Hardware-acceleration
+
 ```
  image: alexxit/go2rtc
     network_mode: host       # important for WebRTC, HomeKit, UDP cameras
@@ -511,7 +514,6 @@ Add the widget `iFrame` and enter the rtsp2web server as source:
 `http://192.168.0.2:8083/pages/multiview/full?controls`
 
 </details>
-
 
 ## FFMpeg support
 
