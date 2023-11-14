@@ -99,6 +99,9 @@ https://hub.docker.com/r/alexxit/go2rtc
 Es gibt auch eine Version mit Hardware Unterstützung:
 https://github.com/AlexxIT/go2rtc/wiki/Hardware-acceleration
 
+Oder go2rtc lokal zu installieren:
+https://forum.iobroker.net/post/1031526
+
 ```
  image: alexxit/go2rtc
     network_mode: host       # important for WebRTC, HomeKit, UDP cameras
