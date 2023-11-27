@@ -169,7 +169,7 @@ class Onvif extends utils.Adapter {
     this.log.debug(`Received event: ${JSON.stringify(event)}`);
     if (!event.topic || !event.topic._) {
       this.log.warn("Event without topic: " + JSON.stringify(event));
-      this.sendSentry(event);
+      // this.sendSentry(event);
       return;
     }
     let id = event.topic._.split(":")[1];
@@ -177,7 +177,7 @@ class Onvif extends utils.Adapter {
 
     if (!event.message) {
       this.log.warn("Event without message: " + JSON.stringify(event));
-      this.sendSentry(event);
+      // this.sendSentry(event);
       return;
     }
     if (event.message.message.source && event.message.message.source.simpleItem) {
@@ -227,7 +227,7 @@ class Onvif extends utils.Adapter {
       await this.setEventState(device, id, dataName, dataValue);
     } else {
       this.log.warn("Event without event.message.message.data.simpleItem.$: " + JSON.stringify(event));
-      this.sendSentry(event);
+      // this.sendSentry(event);
       return;
     }
   }
