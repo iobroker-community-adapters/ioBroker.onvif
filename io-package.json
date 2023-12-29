@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "news": {
+      "1.1.2": {
+        "en": "Catch callback error",
+        "de": "Catch Callback Fehler",
+        "ru": "Ошибка обратного звонка",
+        "pt": "Pegar erro de callback",
+        "nl": "Catch callback fout",
+        "fr": "Erreur de callback",
+        "it": "Cattura errore di callback",
+        "es": "Error de llamada de captura",
+        "pl": "Cat callback error",
+        "uk": "Помилка зворотного зв'язку Catch",
+        "zh-cn": "零星"
+      },
       "1.1.1": {
         "en": "Standard iobroker release environment has been added.\nSome dependencies have been updated.",
         "de": "Es wurde die Standard ioBroker Release Umgebung hinzugefügt.\nEinige Abhängigkeiten wurden aktualisiert.",
@@ -44,10 +57,6 @@
       "1.0.4": {
         "en": "Minor bugfixes and readme update for livestream in vis",
         "de": "Kleine Fehlerbehebungen und Readme-Update für Livestream in Vis"
-      },
-      "1.0.3": {
-        "en": "Minor bugfixes",
-        "de": "Kleine Fehlerbehebungen"
       }
     },
     "titleLang": {
