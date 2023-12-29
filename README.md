@@ -569,6 +569,10 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
     ### **WORK IN PROGRESS**
 -->
 
+### **WORK IN PROGRESS**
+
+- Catch callback error
+
 ### 1.1.1 (2023-10-18)
 
 - (mcm1957) Standard iobroker release environment has been added.
