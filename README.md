@@ -300,7 +300,7 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
 -->
 ### 1.1.2 (2023-12-29)
 
-- Catch callback error
+- (TA2k) Catch callback error
 
 ### 1.1.1 (2023-10-18)
 
