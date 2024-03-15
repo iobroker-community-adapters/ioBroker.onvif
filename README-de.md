@@ -17,64 +17,59 @@
 
 **This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
 
-
-[zur deutschen Dokumentation](README-de.md)
-
-## Add cameras
+## Kameras hinzufügen
 
 ### Discovery:
 
-Each time the adapter is started, a discovery is performed with the user name and password entered in the settings and an attempt is made to log in to the camera. If the camera has not yet been added under Objects.
+Bei jedem Adapterstart wird mit dem in der Einstellungen eingetragen Benutzername und Passwort eine Discovery durchgeführt und versucht sich in die Kamera einzuloggen. Falls die Kamera noch nicht unter Objekte hinzugefügt wurde.
 
-You can perform the discovery manually in the settings. If the cameras have different credentials, you have to enter them and perform a discovery. In the log you can see the details of the process.
+In den Einstellungen kann man die Discovery manuell ausführen. Falls die Kameras unterschiedliche Zugangsdaten haben müssen die jeweils eingegeben werden und eine discovery durchgeführt werden. Im Log sieht man Details zu dem Prozess.
 
-In order for a camera to be detected again, it must simply be deleted under Objects.
+Damit eine Kamera neu erkannt wird muss sie einfach unter Objekte gelöscht werden.
 
-### Manual search
+### Manuelle Suche
 
-Cameras can be searched for manually if Discovery does not work. To do this, an IP range and ports must be entered and executed manually. In the log you can see details about the process.
+Es können Kameras manuell gesucht werden, falls Discovery nicht funktioniert. Dazu muss eine IP Range und Ports eingegeben und manuell ausgeführt werden. Im Log sieht man Details zu dem Prozess.
 
-## States
+## Datenpunkte
 
-onvif.0.IP_PORT.events Events of the camera like e.g. motion detection. Sometimes you have to trigger the event to see it.
+onvif.0.IP_PORT.events Events der Kamera wie z.b. Bewegungserkennung. Manchmal muss ein Event ausgelöst werden damit er angezeigt wird.
 
-onvif.0.IP_PORT.general General information about the cameras
+onvif.0.IP_PORT.general Generelle Information über die Kameras
 
-onvif.0.IP_PORT.infos Information about the camera is only updated at adapter start or at remote.refresh
+onvif.0.IP_PORT.infos Informationen über die Kamera werden nur bei Adapterstart aktualisiert oder bei remote.refresh
 
-Video and Snapshot URL:
+Video und Snapshot URL:
 
 onvif.0.IP_PORT.infos.streamUris.MediaProfile_Channel1_MainStream.snapshotUrl.uri
 
-onvif.0.IP_PORT.remote Control of the camera
+onvif.0.IP_PORT.remote Steuerung der Kamera
 
-onvif.0.IP_PORT.remote.refresh Updating the info data
+onvif.0.IP_PORT.remote.refresh Aktualisierung der Infodaten
 
-onvif.0.IP_PORT.remote.gotoHomePosition Set PTZ camera to home position
+onvif.0.IP_PORT.remote.gotoHomePosition PTZ Kamera in die HomePosition setzen
 
-onvif.0.IP_PORT.remote.gotoPreset Select PTZ camera preset number
+onvif.0.IP_PORT.remote.gotoPreset PTZ Kamera Preset Nummer auswählen
 
-onvif.0.IP_PORT.remote.snapshot Save snapshot to onvif.0.IP_PORT.snapshot
+onvif.0.IP_PORT.remote.snapshot Speichert ein snapshot unter onvif.0.IP_PORT.snapshot
 
 ## Message
 
-Adapter receives message "snapshot" and returns image
+Adapter nimmt Message "snapshot" entgegen und gibt ein Bild zurück
 
 ```javascript
 sendTo("onvif.0", "snapshot", "192_168_178_100_80", (result) => {
   if (result) {
     sendTo("telegram.0", {
       text: result,
-
       type: "photo",
-
-      caption: "camera2",
+      caption: "Kamera 2",
     });
   }
 });
 ```
 
-## Motion message to Telegram
+## Bewegungsmeldung zu Telegram
 
 ```javascript
 on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (obj) => {
@@ -83,9 +78,7 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
       if (result) {
         sendTo("telegram.0", {
           text: result,
-
           type: "photo",
-
           caption: "Camera 2",
         });
       }
@@ -94,49 +87,57 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
 });
 ```
 
-# Include stream into vis
+# Stream in vis einbinden
 
-If stream should be displayed in Apple Homekit then please create a camera directly in yahka. If that doesn't work or hksv is needed then install scrypted in a docker and add the camera with onvif and homekit plugin
+Wenn Stream in Apple Homekit angezeigt werden soll dann bitte direkt in yahka eine camera erzeugen. Wenn das nicht funktioniert oder hksv benötigt wird, dann scrypted in einem docker installieren und die Kamera mit onvif und homekit plugin hinzufügen
 
 ## go2rtsp Docker
 
-A stream is normally provided via rtsp stream. A conversion via motion eye is very resource-intensive and has a delay. A conversion to webrtc is faster and saves resources. My recommendation is a [go2rtsp](https://github.com/AlexxIT/go2rtc). A docker from alexxit/go2rtc must be created for this.
+Ein Stream wird normalerweise via rtsp stream bereitgestellt. Eine Umwandlung via motion eye ist sehr resourcen aufwändig und hat ein Verzögerng. Ein Umwandlung in webrtc ist schneller und resourcenschonender. Meine Empfehlung ist ein [go2rtsp](https://github.com/AlexxIT/go2rtc). Dazu muss ein Docker von alexxit/go2rtc erstellt werden.
 https://hub.docker.com/r/alexxit/go2rtc
+
+Es gibt auch eine Version mit Hardware Unterstützung:
+https://github.com/AlexxIT/go2rtc/wiki/Hardware-acceleration
+
+Oder go2rtc lokal zu installieren:
+https://forum.iobroker.net/post/1031526
 
 ```
  image: alexxit/go2rtc
-    network_mode: host # important for WebRTC, HomeKit, UDP cameras
-    privileged: true # only for FFmpeg hardware transcoding
-    restart: unless-stopped # autorestart on fail or config change from WebUI
+    network_mode: host       # important for WebRTC, HomeKit, UDP cameras
+    privileged: true         # only for FFmpeg hardware transcoding
+    restart: unless-stopped  # autorestart on fail or config change from WebUI
     environment:
-      - TZ=Europe/Berlin # timezone in logs
+      - TZ=Europe/Berlin  # timezone in logs
     volumes:
-      - "~/go2rtc:/config" # folder for go2rtc.yaml file (edit from WebUI)
+      - "~/go2rtc:/config"   # folder for go2rtc.yaml file (edit from WebUI)
 ```
 
-A volume must be set for the path /config and the network as host.
+Es muss ein Volume für den Pfad /config und das Netzwerk als Host eingestellt werden.
 
-Then go2rtsp is accessible via
+Dann ist go2rtsp erreichbar über
 
 ```
 http://IP:1984
 ```
 
-Then you can add a stream. The stream url can be found e.g. under
+Dann kann man ein Stream hinzufügen. Die Stream url findet man z.B. unter
 `onvif.0.IP_PORT.infos.streamUris.ProfileName.live_stream_tcp.uri`
 
 <img src="addgo.png" height="300">
 
-### Insert stream as iFrame
+### Stream als iFrame einfügen
 
-Add the `iFrame` widget in the Vis and use the stream link from go2rtsp as the source
+Das Widget `iFrame` in der Vis hinzufügen und als Quelle den stream link von go2rtsp verwenden
 
 `http://192.168.178.1:1984/stream.html?src=camera&mode=webrtc`
 
+Unter links kann noch die Art des Players ausgewählt werden (Mikrofon)
+
 ## Rtsp2Web Docker
 
-An alternative is a [RTSPtoWeb](https://github.com/deepch/RTSPtoWeb) Docker. However, this is more complicated to set up.
-A Docker must be created from ghcr.io/deepch/rtsptoweb:latest.
+Eine Alternative ist ein [RTSPtoWeb](https://github.com/deepch/RTSPtoWeb) Docker. Dies ist aber von der Einrichtun komplizierter.
+Dazu muss ein Docker von ghcr.io/deepch/rtsptoweb:latest erstellt werden.
 
 <details>
 
@@ -144,30 +145,30 @@ A Docker must be created from ghcr.io/deepch/rtsptoweb:latest.
 docker run --name rtsp-to-web -v /YOURPATHFORCONFIG:/config --network host ghcr.io/deepch/rtsptoweb:latest
 ```
 
-A volume must be set for the path /config and the network must be set as host.
+Es muss ein Volume für den Pfad /config und das network als host eingestellt werden.
 
-Then rtsptoweb can be reached via
+Dann ist rtsptoweb erreichbar über
 
 ```
 http://IP:8083
 ```
 
-Then you can add a stream. The stream url can be found e.g. under
+Dann kann man ein Stream hinzufügen. Die Stream url findet man z.B. unter
 `onvif.0.IP_PORT.infos.streamUris.ProfileName.live_stream_tcp.uri`
 
 <img src="addstream.png" height="600">
 
-### Then we need the Stream Id. To do this, stream edit and copy out the Id in the URL
+### Danach benötigen wir die Stream Id. Dafür Stream Edit und in der URL die Id rauskopieren
 
 `http://192.168.178.2:8083/pages/stream/edit/ddbdb583-9f80-4b61-bafa-613aa7a5daa5`
 
-## Insert individual stream in the vis
+## Einzelnen Stream in der Vis einfügen
 
-Then select an HTML object in the vis. Then enter the rtsp2web server with stream id in the widget under HTML:
+Dann in der vis ein HTML Objekt auswählen. Dann im Widget unter HTML den rtsp2web server mit stream id eintragen:
 
 <img src="html.png" height="150">
 
-## **If multiple streams are to be added, `webrtc-url` and `webrtc-video` in html and script must be replaced with a new id e.g. `webrtc-url2` and `webrtc-video2`**
+## **Wenn mehrere Stream hinzugefügt werden soll muss `webrtc-url` und `webrtc-video` in html und skript mit einer neuen id ersetzt werden z.B. `webrtc-url2` und `webrtc-video2`**
 
 ```html
 <input
@@ -180,7 +181,7 @@ Then select an HTML object in the vis. Then enter the rtsp2web server with strea
 <video id="webrtc-video" autoplay muted playsinline controls style="max-width: 100%; max-height: 100%;"></video>
 ```
 
-Add this script in the widget under Scripts:
+In dem Widget unter Skripte dieses Skript hinzufügen:
 
 ```javascript
 setTimeout(function () {
@@ -239,46 +240,45 @@ setTimeout(function () {
 
 <img src="widgetskript.png" height="200">
 
-## All streams as iFrame
+## Alle Streams als iFrame
 
-Alternatively, you could also insert the camera overview as an iframe:
-Add the widget `iFrame` and enter the rtsp2web server as source:
+Alternativ könnte man auch den Kamera Overview als Iframe einfügen:
+Das Widget `iFrame` hinzufügen und als Quelle den rtsp2web Server eintragen:
 
 `http://192.168.0.2:8083/pages/multiview/full?controls`
 
 </details>
 
-## FFMpeg support
+## FFMpeg Unterstützung
 
-If the camera does not have snapshot support, ffmpeg will create a snapshot from the rtsp stream.
+Wenn die Kamera keine Snapshot Unterstützng hat wird mit ffmpeg ein snapshot aus dem rtsp stream erzeugt.
 
-## Include snapshot server in vis
+## Snapshot Server in vis einbinden
 
-The adapter offers a snapshot server without password. Activate the server in the instance settings and then you can get the current snapshot http://iobrokerIp:8095/CAMERAIP_PORT e.g. http://192.168.0.1:8095/192_168_0_1_80.
+Der Adapter bietet ein Snapshot Server ohne Passwort an. Dazu Server aktivieren in den Instanzeinstellungen und dann kann der aktuelle Snapshot http://iobrokerIp:8095/CAMERAIP_PORT z.B. http://192.168.0.1:8095/192_168_0_1_80 abgerufen werden.
 
-Insert an image widget in the vis and specify the url as source and select an update time
+In der Vis ein Image Widget einfügen und die Url als Quelle angeben und eine Updatezeit auswählen
 
-## Include snapshot in vis
+## Snapshot in vis einbinden
 
-If possible use the snapshotUri e.g.
-
+Wenn möglich die snapshotUri verwenden z.B.
 onvif.0.IP_PORT.infos.streamUris.MediaProfile_Channel1_MainStream.snapshotUrl.uri
 
-### _Do not use the state as a stream, otherwise the disk load will be too high._
+### _Den Datenpunkt nicht als Stream verwenden, da sonst die Festplatte zu hohe Last hat._
 
-#### Update the state via onvif.0.IP_PORT.remote.snapshot
+#### Den Datenpunkt aktualisieren via onvif.0.IP_PORT.remote.snapshot
 
-Assign a `String img src` element to the state onvif.0.IP_PORT.snapshot.
+Den Datenpunkt onvif.0.IP_PORT.snapshot ein `String img src` element zuordnen
 
-Or as an alternative if `String img src` does not work
+Oder als Alternative falls `String img src` nicht funktioniert
 
-Insert the state onvif.0.IP_PORT.snapshot as `HTML` element into the vis with the following content
+Den Datenpunkt onvif.0.IP_PORT.snapshot als `HTML` element in die vis einfügen mit folgendem Inhalt
 
 ```javascript
 <img src="{onvif.0.IP_PORT.snapshot}" width="500px" />
 ```
 
-Create new snapshot on event:
+Neuen Snapshot erzeugen bei Event:
 
 ```javascript
 on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (obj) => {
@@ -288,59 +288,19 @@ on("onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion", (ob
 });
 ```
 
-## Discussion (german)
+## Diskussion und Fragen
 
 <https://forum.iobroker.net/topic/63145/test-adapter-onvif-camera-v1-0-0>
 
 ## Changelog
 
-<!--
-    Placeholder for the next version (at the beginning of the line):
-    ### **WORK IN PROGRESS**
--->
-
-### **WORK IN PROGRESS**
-
-- Allow non number PTZ presets
-
-### 1.1.2 (2023-12-29)
-
-- (TA2k) Catch callback error
-
-### 1.1.1 (2023-10-18)
-
-- (mcm1957) Standard iobroker release environment has been added.
-- (mcm1957) Some dependencies have been updated.
-
-### 1.1.0
-
-- (TA2k) Bugfixes
-
-### 1.0.5
-
-- Improve event handling
-
-### 1.0.4
-
-- (TA2k) Minor bugfixes and readme update for livestream in vis
-
-### 1.0.3
-
-- (TA2k) Minor bugfixes
-
-### 1.0.2
-
-- (TA2k) Fixed a reonnect and empty event bug
-
-### 1.0.1
-
-- (TA2k) initial new release
+Das Changelog findet sich in der englischen README.md.
 
 ## License
 
 MIT License
 
-Copyright (c) 2023-2024 TA2k <tombox2020@gmail.com>
+Copyright (c) 2023 TA2k <tombox2020@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
