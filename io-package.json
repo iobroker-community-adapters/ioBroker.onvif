@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "news": {
+      "1.1.3": {
+        "en": "Allow non number PTZ presets",
+        "de": "Nicht nummerische PTZ Presets sind jetzt möglich",
+        "ru": "Разрешение нечисленных ПТЗ",
+        "pt": "Permitir predefinições PTZ não número",
+        "nl": "Niet-nummer PTZ-voorinstellingen toestaan",
+        "fr": "Autoriser les préréglages PTZ non numérotés",
+        "it": "Consentire preset PTZ non numero",
+        "es": "Permitir presets no número PTZ",
+        "pl": "Zezwalaj na nienumeryczne ustawienia PTZ",
+        "uk": "Дозволити не число PTZ пресети",
+        "zh-cn": "允许非数字 PTZ 预设"
+      },
       "1.1.2": {
         "en": "Catch callback error",
         "de": "Catch Callback Fehler",
@@ -53,10 +66,6 @@
       "1.0.5": {
         "en": "Improve event handling",
         "de": "Verbesserte Ereignisbehandlung"
-      },
-      "1.0.4": {
-        "en": "Minor bugfixes and readme update for livestream in vis",
-        "de": "Kleine Fehlerbehebungen und Readme-Update für Livestream in Vis"
       }
     },
     "titleLang": {
@@ -85,13 +94,8 @@
       "uk": "Адаптер для фотокамер",
       "zh-cn": "onvif 相机适配器"
     },
-    "authors": [
-      "TA2k <tombox2020@gmail.com>"
-    ],
-    "keywords": [
-      "onvif",
-      "camera"
-    ],
+    "authors": ["TA2k <tombox2020@gmail.com>"],
+    "keywords": ["onvif", "camera"],
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "main": "main.js",
@@ -125,9 +129,7 @@
       }
     ]
   },
-  "protectedNative": [
-    "password"
-  ],
+  "protectedNative": ["password"],
   "native": {
     "user": "admin",
     "password": "admin",
@@ -141,10 +143,7 @@
     {
       "condition": {
         "operand": "and",
-        "rules": [
-          "oldVersion<1.0.0",
-          "newVersion>=1.0.0"
-        ]
+        "rules": ["oldVersion<1.0.0", "newVersion>=1.0.0"]
       },
       "title": {
         "en": "Important notice!",
@@ -172,10 +171,7 @@
         "zh-cn": "适应者完全被改写,活动物品也发生了变化。 更新后,所有公认的摄像机都被删除,必须再次发现。."
       },
       "level": "warn",
-      "buttons": [
-        "agree",
-        "cancel"
-      ]
+      "buttons": ["agree", "cancel"]
     }
   ],
   "objects": [],
