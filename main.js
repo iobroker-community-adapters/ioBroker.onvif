@@ -604,11 +604,11 @@ class Onvif extends utils.Adapter {
     const remoteArray = [
       { command: "Refresh", name: "True = Refresh" },
       { command: "snapshot", name: "True = Switch On, False = Switch Off" },
-      { command: "gotoPreset", name: "PTZ preset", type: "number", role: "level", def: 0 },
+      { command: "gotoPreset", name: "PTZ preset (1 or 001)", type: "string", role: "text", def: "0" },
       { command: "gotoHomePosition", name: "Goto Home Position" },
     ];
     remoteArray.forEach((remote) => {
-      this.setObjectNotExists(id + ".remote." + remote.command, {
+      this.extendObject(id + ".remote." + remote.command, {
         type: "state",
         common: {
           name: remote.name || "",
