@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.1.3",
+    "version": "1.1.4",
     "news": {
+      "1.1.4": {
+        "en": "update onvif lib to support newer TAPO cameras\nAdapter requires nodejs >=18 now.",
+        "de": "Aktualisierung onvif lib zur Unterstützung neuerer TAPO-Kameras\nAdapter benötigt jetzt nodejs >=18.",
+        "ru": "обновление onvif lib для поддержки новых камер TAPO\nАдаптер требует nodejs >=18.",
+        "pt": "atualizar onvif lib para suportar mais novas câmeras TAPO\nAdaptador requer nodejs >=18 agora.",
+        "nl": "update onvif lib om nieuwere TAPO camera's te ondersteunen\nVoor de adapter zijn nodejs < 18 nodig.",
+        "fr": "update onvif lib pour prendre en charge les caméras TAPO plus récentes\nAdaptateur nécessite nodejs >=18 maintenant.",
+        "it": "aggiornamento onvif lib per supportare le nuove telecamere TAPO\nL'adattatore richiede nodejs >=18 ora.",
+        "es": "actualizar onvif lib para soportar nuevas cámaras TAPO\nAdaptador requiere nodejs ю=18 ahora.",
+        "pl": "aktualizacji onvif lib do obsługi nowszych kamer TAPO\nAdapter wymaga nodejs > = 18 teraz.",
+        "uk": "оновлення onvif lib для підтримки нових камер TAPO\nАдаптер вимагає nodejs >=18 тепер.",
+        "zh-cn": "更新 onvif lib 支持更新的 TAPO 相机\n适配器现在需要节点18."
+      },
       "1.1.3": {
         "en": "Allow non number PTZ presets",
         "de": "Nicht nummerische PTZ Presets sind jetzt möglich",
@@ -62,10 +75,6 @@
       "1.0.7": {
         "en": "Improve device information parsing",
         "de": "Verbesserte Geräteinformationen Parsing"
-      },
-      "1.0.5": {
-        "en": "Improve event handling",
-        "de": "Verbesserte Ereignisbehandlung"
       }
     },
     "titleLang": {
