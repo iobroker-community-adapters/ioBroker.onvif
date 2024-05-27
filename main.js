@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /*
  * Created with @iobroker/create-adapter v2.3.0
@@ -6,14 +6,14 @@
 
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
-const utils = require("@iobroker/adapter-core");
-const { request } = require("urllib");
-const Json2iob = require("json2iob");
-const Cam = require("onvif").Cam;
-const xml2js = require("xml2js");
-const Discovery = require("onvif").Discovery;
-const { promisify } = require("util");
-const http = require("http");
+const utils = require('@iobroker/adapter-core');
+const { request } = require('urllib');
+const Json2iob = require('json2iob');
+const Cam = require('onvif').Cam;
+const xml2js = require('xml2js');
+const Discovery = require('onvif').Discovery;
+const { promisify } = require('util');
+const http = require('http');
 
 class Onvif extends utils.Adapter {
   /**
@@ -22,12 +22,12 @@ class Onvif extends utils.Adapter {
   constructor(options) {
     super({
       ...options,
-      name: "onvif",
+      name: 'onvif',
     });
-    this.on("ready", this.onReady.bind(this));
-    this.on("stateChange", this.onStateChange.bind(this));
-    this.on("unload", this.onUnload.bind(this));
-    this.on("message", this.onMessage.bind(this));
+    this.on('ready', this.onReady.bind(this));
+    this.on('stateChange', this.onStateChange.bind(this));
+    this.on('unload', this.onUnload.bind(this));
+    this.on('message', this.onMessage.bind(this));
     this.deviceArrayManualSearch = [];
     this.deviceNatives = {};
     this.devices = {};
@@ -41,12 +41,12 @@ class Onvif extends utils.Adapter {
   async onReady() {
     await this.cleanOldVersion();
 
-    this.subscribeStates("*");
+    this.subscribeStates('*');
 
     const adapterDevices = await this.getDevicesAsync();
     for (const device of adapterDevices) {
       this.log.info(`Found Adapter Device: ${device._id} ${device.common.name}`);
-      this.log.debug("Device: " + JSON.stringify(device));
+      this.log.debug('Device: ' + JSON.stringify(device));
       if (!device.native.ip) {
         this.log.error(`Device ${device.common.name} has no ip address, please delete device and rediscover the camera`);
         device.native.ip = device.native.hostname;
@@ -58,7 +58,7 @@ class Onvif extends utils.Adapter {
         password: device.native.password,
       })
         .then(async (cam) => {
-          this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
+          this.log.info('Device successful initialized: ' + cam.hostname + ':' + cam.port);
           return cam;
         })
         .catch(async (error) => {
@@ -72,14 +72,14 @@ class Onvif extends utils.Adapter {
         });
       if (camObj) {
         this.devices[camObj.hostname] = camObj;
-        await this.setObjectNotExistsAsync(device.native.id + ".events", {
-          type: "channel",
+        await this.setObjectNotExistsAsync(device.native.id + '.events', {
+          type: 'channel',
           common: {
-            name: "Camera Events",
+            name: 'Camera Events',
           },
           native: {},
         });
-        camObj.on("event", this.processEvent.bind(this, device));
+        camObj.on('event', this.processEvent.bind(this, device));
 
         this.devices[camObj.hostname] = camObj;
         const native = await this.fetchCameraInfos(camObj, { address: device.native.ip });
@@ -87,11 +87,11 @@ class Onvif extends utils.Adapter {
       }
     }
 
-    this.log.info("Start onvif discovery");
+    this.log.info('Start onvif discovery');
     await this.discovery();
-    this.log.info("Finished onvif discovery");
+    this.log.info('Finished onvif discovery');
     if (this.config.activateServer) {
-      this.log.info("Starting snapshot server");
+      this.log.info('Starting snapshot server');
       await this.startServer();
     }
     //reconnnect all cameras every 30min to prevent undetected disconnects and event lost
@@ -101,11 +101,11 @@ class Onvif extends utils.Adapter {
       },
       1000 * 30 * 60,
     );
-    this.log.debug("Reconnect interval set.  Next reconnect: " + new Date(Date.now() + 1000 * 30 * 60));
+    this.log.debug('Reconnect interval set.  Next reconnect: ' + new Date(Date.now() + 1000 * 30 * 60));
   }
 
   async reconnectAllCameras() {
-    this.log.debug("Reconnecting all cameras " + Object.keys(this.deviceNatives).length);
+    this.log.debug('Reconnecting all cameras ' + Object.keys(this.deviceNatives).length);
     for (const deviceId in this.deviceNatives) {
       const camNative = this.deviceNatives[deviceId];
       this.log.debug(`Reconnecting to ${deviceId}`);
@@ -120,10 +120,10 @@ class Onvif extends utils.Adapter {
       await promisify(cam.connect)
         .bind(cam)()
         .then(() => {
-          this.setStateAsync(deviceId + ".connection", true, true);
+          this.setStateAsync(deviceId + '.connection', true, true);
         })
         .catch((e) => {
-          this.setStateAsync(deviceId + ".connection", false, true);
+          this.setStateAsync(deviceId + '.connection', false, true);
           this.log.error(e);
         });
 
@@ -135,12 +135,12 @@ class Onvif extends utils.Adapter {
   async startServer() {
     this.server = http.createServer(async (req, res) => {
       try {
-        const camId = req.url.split("/")[1].split("?")[0];
+        const camId = req.url.split('/')[1].split('?')[0];
         const native = this.deviceNatives[camId];
         if (native) {
           const image = await this.getSnapshot(camId);
           if (image != null) {
-            res.writeHead(200, { "Content-Type": "image/jpg" });
+            res.writeHead(200, { 'Content-Type': 'image/jpg' });
             res.write(image);
             res.end();
           } else {
@@ -149,7 +149,7 @@ class Onvif extends utils.Adapter {
           }
         } else {
           res.writeHead(404);
-          res.write("No camera found");
+          res.write('No camera found');
           res.end();
         }
       } catch (error) {
@@ -168,15 +168,15 @@ class Onvif extends utils.Adapter {
   async processEvent(device, event) {
     this.log.debug(`Received event: ${JSON.stringify(event)}`);
     if (!event.topic || !event.topic._) {
-      this.log.warn("Event without topic: " + JSON.stringify(event));
+      this.log.warn('Event without topic: ' + JSON.stringify(event));
       // this.sendSentry(event);
       return;
     }
-    let id = event.topic._.split(":")[1];
-    id = id.replace(/\./g, "_");
+    let id = event.topic._.split(':')[1];
+    id = id.replace(/\./g, '_');
 
     if (!event.message) {
-      this.log.warn("Event without message: " + JSON.stringify(event));
+      this.log.warn('Event without message: ' + JSON.stringify(event));
       // this.sendSentry(event);
       return;
     }
@@ -184,18 +184,18 @@ class Onvif extends utils.Adapter {
       if (Array.isArray(event.message.message.source.simpleItem)) {
         for (const item of event.message.message.source.simpleItem) {
           let sourceName = item.$.Name;
-          sourceName = sourceName.replace(/\./g, "_");
+          sourceName = sourceName.replace(/\./g, '_');
           let sourceValue = item.$.Value;
-          if (typeof sourceValue === "object") {
+          if (typeof sourceValue === 'object') {
             sourceValue = JSON.stringify(sourceValue);
           }
-          await this.setEventState(device, id + "_" + sourceName, sourceName, sourceValue);
+          await this.setEventState(device, id + '_' + sourceName, sourceName, sourceValue);
         }
       } else {
         let sourceName = event.message.message.source.simpleItem.$.Name;
         let sourceValue = event.message.message.source.simpleItem.$.Value;
-        sourceName = sourceName.replace(/\./g, "_");
-        if (typeof sourceValue === "object") {
+        sourceName = sourceName.replace(/\./g, '_');
+        if (typeof sourceValue === 'object') {
           sourceValue = JSON.stringify(sourceValue);
         }
         await this.setEventState(device, id, sourceName, sourceValue);
@@ -205,68 +205,68 @@ class Onvif extends utils.Adapter {
       if (Array.isArray(event.message.message.data.simpleItem)) {
         for (const item of event.message.message.data.simpleItem) {
           let sourceName = item.$.Name;
-          sourceName = sourceName.replace(/\./g, "_");
+          sourceName = sourceName.replace(/\./g, '_');
           let sourceValue = item.$.Value;
-          if (typeof sourceValue === "object") {
+          if (typeof sourceValue === 'object') {
             sourceValue = JSON.stringify(sourceValue);
           }
-          await this.setEventState(device, id + "_" + sourceName, sourceName, sourceValue);
+          await this.setEventState(device, id + '_' + sourceName, sourceName, sourceValue);
         }
       } else {
         let value = event.message.message.data.simpleItem.$.Value;
         let name = event.message.message.data.simpleItem.$.Name;
-        name = name.replace(/\./g, "_");
-        if (typeof value === "object") {
+        name = name.replace(/\./g, '_');
+        if (typeof value === 'object') {
           value = JSON.stringify(value);
         }
         await this.setEventState(device, id, name, value);
       }
     } else if (event.message.message.data && event.message.message.data.elementItem) {
-      const dataName = "elementItem";
+      const dataName = 'elementItem';
       const dataValue = JSON.stringify(event.message.message.data.elementItem);
       await this.setEventState(device, id, dataName, dataValue);
     } else {
-      this.log.warn("Event without event.message.message.data.simpleItem.$: " + JSON.stringify(event));
+      this.log.warn('Event without event.message.message.data.simpleItem.$: ' + JSON.stringify(event));
       // this.sendSentry(event);
       return;
     }
   }
   async setEventState(device, id, name, value) {
-    await this.extendObjectAsync(device.native.id + ".events." + id, {
-      type: "state",
+    await this.extendObjectAsync(device.native.id + '.events.' + id, {
+      type: 'state',
       common: {
         name: name,
         type: typeof value,
-        role: "indicator",
+        role: 'indicator',
         read: true,
         write: false,
       },
       native: {},
     });
-    await this.setStateAsync(device.native.id + ".events." + id, value, true);
+    await this.setStateAsync(device.native.id + '.events.' + id, value, true);
   }
 
   sendSentry(event) {
-    if (this.supportsFeature && this.supportsFeature("PLUGINS")) {
-      const sentryInstance = this.getPluginInstance("sentry");
+    if (this.supportsFeature && this.supportsFeature('PLUGINS')) {
+      const sentryInstance = this.getPluginInstance('sentry');
       if (sentryInstance) {
         const Sentry = sentryInstance.getSentryObject();
-        Sentry && Sentry.captureMessage("Wrong Event", { extra: { message: JSON.stringify(event) }, level: "info" });
+        Sentry && Sentry.captureMessage('Wrong Event', { extra: { message: JSON.stringify(event) }, level: 'info' });
       }
     }
   }
 
   async discovery() {
-    Discovery.on("device", (cam, rinfo, xml) => {
+    Discovery.on('device', (cam, rinfo, xml) => {
       // Function will be called as soon as the NVT responses
 
       // Parsing of Discovery responses taken from my ONVIF-Audit project, part of the 2018 ONVIF Open Source Challenge
       // Filter out xml name spaces
-      xml = xml.replace(/xmlns([^=]*?)=(".*?")/g, "");
+      xml = xml.replace(/xmlns([^=]*?)=(".*?")/g, '');
 
       const parser = new xml2js.Parser({
-        attrkey: "attr",
-        charkey: "payload", // this ensures the payload is called .payload regardless of whether the XML Tags have Attributes or not
+        attrkey: 'attr',
+        charkey: 'payload', // this ensures the payload is called .payload regardless of whether the XML Tags have Attributes or not
         explicitCharkey: true,
         tagNameProcessors: [xml2js.processors.stripPrefix], // strip namespace eg tt:Data -> Data
       });
@@ -274,19 +274,19 @@ class Onvif extends utils.Adapter {
         if (err) {
           return;
         }
-        const scopeObject = { name: "", hardware: "" };
-        let xaddrs = "";
-        let urn = "";
+        const scopeObject = { name: '', hardware: '' };
+        let xaddrs = '';
+        let urn = '';
 
         try {
-          urn = result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["EndpointReference"][0]["Address"][0].payload;
-          xaddrs = result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["XAddrs"][0].payload;
-          let scopes = result["Envelope"]["Body"][0]["ProbeMatches"][0]["ProbeMatch"][0]["Scopes"][0].payload;
-          scopes = scopes.split(" ");
+          urn = result['Envelope']['Body'][0]['ProbeMatches'][0]['ProbeMatch'][0]['EndpointReference'][0]['Address'][0].payload;
+          xaddrs = result['Envelope']['Body'][0]['ProbeMatches'][0]['ProbeMatch'][0]['XAddrs'][0].payload;
+          let scopes = result['Envelope']['Body'][0]['ProbeMatches'][0]['ProbeMatch'][0]['Scopes'][0].payload;
+          scopes = scopes.split(' ');
 
           try {
             for (let i = 0; i < scopes.length; i++) {
-              const scopeArray = scopes[i].split("/");
+              const scopeArray = scopes[i].split('/');
 
               const value = decodeURIComponent(scopeArray[4]);
               if (scopeArray.length <= 5) {
@@ -312,11 +312,11 @@ class Onvif extends utils.Adapter {
               }
             }
           } catch (error) {
-            this.log.error("Error parsing scopes: " + error);
+            this.log.error('Error parsing scopes: ' + error);
             this.log.error(error.stack);
           }
         } catch (error) {
-          this.log.warn("Skip parsing " + JSON.stringify(rinfo) + " xml: " + error);
+          this.log.warn('Skip parsing ' + JSON.stringify(rinfo) + ' xml: ' + error);
           this.log.warn(xml);
         }
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
@@ -328,7 +328,7 @@ class Onvif extends utils.Adapter {
         }
 
         this.log.info(
-          `Try to login to ${rinfo.address}:${cam.port}` + " with " + this.config.user + ":" + this.maskPassword(this.config.password),
+          `Try to login to ${rinfo.address}:${cam.port}` + ' with ' + this.config.user + ':' + this.maskPassword(this.config.password),
         );
         await this.initDevice({
           ip: rinfo.address,
@@ -337,85 +337,85 @@ class Onvif extends utils.Adapter {
           password: this.config.password,
         })
           .then(async (cam) => {
-            this.log.info("Device successful initialized: " + cam.hostname + ":" + cam.port);
+            this.log.info('Device successful initialized: ' + cam.hostname + ':' + cam.port);
             const native = await this.fetchCameraInfos(cam, rinfo);
             this.deviceNatives[native.id] = native;
             this.discoveredDevices.push(native.name);
             this.devices[cam.hostname] = cam;
-            cam.on("event", this.processEvent.bind(this, { native: native }));
+            cam.on('event', this.processEvent.bind(this, { native: native }));
           })
           .catch((error) => {
             this.log.error(
               `Failed to login to ${rinfo.address}:${cam.port}` +
-                " with " +
+                ' with ' +
                 this.config.user +
-                ":" +
+                ':' +
                 this.maskPassword(this.config.password),
             );
-            this.log.error("Error " + error.err);
+            this.log.error('Error ' + error.err);
             this.log.debug(error.err.stack);
             this.log.info(`Data: ${JSON.stringify(error.data)} xml: ${error.xml}`);
           });
       });
     });
-    Discovery.on("error", (err, xml) => {
+    Discovery.on('error', (err, xml) => {
       // The ONVIF library had problems parsing some XML
-      this.log.error("Discovery error " + err);
+      this.log.error('Discovery error ' + err);
       this.log.error(xml);
       this.log.error(err.stack);
     });
     await promisify(Discovery.probe)().catch((err) => {
-      this.log.error("Error during discovery: " + err);
+      this.log.error('Error during discovery: ' + err);
     });
   }
   async fetchCameraInfos(cam, rinfo) {
-    this.log.debug("Fetch camera infos for " + cam.hostname + ":" + cam.port);
+    this.log.debug('Fetch camera infos for ' + cam.hostname + ':' + cam.port);
     const timeDate = await promisify(cam.getSystemDateAndTime)
       .bind(cam)()
       .catch((e) => {
-        this.log.error("Failed to get SystemDateAndTime");
+        this.log.error('Failed to get SystemDateAndTime');
         this.log.error(e);
       });
     const deviceInformation = await promisify(cam.getDeviceInformation)
       .bind(cam)()
       .catch((e) => {
-        this.log.error("Failed to get DeviceInformation");
+        this.log.error('Failed to get DeviceInformation');
         this.log.error(e);
       });
     const deviceProfiles = await promisify(cam.getProfiles)
       .bind(cam)()
       .catch((e) => {
-        this.log.error("Failed to get Profiles");
+        this.log.error('Failed to get Profiles');
         this.log.error(e);
       });
     const deviceCapabilities = await promisify(cam.getCapabilities)
       .bind(cam)()
       .catch((e) => {
-        this.log.error("Failed to get Capabilities");
+        this.log.error('Failed to get Capabilities');
         this.log.error(e);
       });
     const deviceServices = await promisify(cam.getServices)
       .bind(cam)(true)
       .catch((e) => {
-        this.log.error("Failed to get Services");
+        this.log.error('Failed to get Services');
         this.log.error(e);
       });
     const deviceServicesCapabilities = await promisify(cam.getServiceCapabilities)
       .bind(cam)()
       .catch((e) => {
-        this.log.error("Failed to get ServiceCapabilities");
+        this.log.error('Failed to get ServiceCapabilities');
         this.log.error(e);
       });
     const scopes = await promisify(cam.getScopes)
       .bind(cam)()
       .catch((e) => {
-        this.log.error("Failed to get Scopes");
+        this.log.error('Failed to get Scopes');
         this.log.error(e);
       });
     const videoSources = await promisify(cam.getVideoSources)
       .bind(cam)()
       .catch((e) => {
-        this.log.error("Failed to get VideoSources");
+        this.log.error('Failed to get VideoSources');
         this.log.error(e);
       });
     const status = await promisify(cam.getStatus)
@@ -429,15 +429,15 @@ class Onvif extends utils.Adapter {
       .catch((e) => {
         this.log.warn(`No presets found for ${cam.hostname}:${cam.port} ${e}`);
       });
-    let snapshotUrl = "";
-    let minorStreamUrl = "";
-    let majorStreamUrl = "";
+    let snapshotUrl = '';
+    let minorStreamUrl = '';
+    let majorStreamUrl = '';
     const streamUris = {};
     if (deviceProfiles && deviceProfiles.length > 0) {
       //find image urls for each profile
       for (const profile of deviceProfiles) {
         //replace dots and quotes in profile name
-        profile.name = profile.name.replace(/\./g, "_").replace(/"/g, "");
+        profile.name = profile.name.replace(/\./g, '_').replace(/"/g, '');
         streamUris[profile.name] = {};
         streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
           .bind(cam)({ ProfileToken: profile.$.token })
@@ -459,15 +459,15 @@ class Onvif extends utils.Adapter {
               }
               snapshotUrl = urlObject.toString();
             } catch (error) {
-              this.log.error("Failed to parse snapshot url" + snapshotUrl);
+              this.log.error('Failed to parse snapshot url' + snapshotUrl);
               this.log.error(error);
             }
           }
         }
         streamUris[profile.name].live_stream_tcp = await promisify(cam.getStreamUri)
           .bind(cam)({
-            protocol: "RTSP",
-            stream: "RTP-Unicast",
+            protocol: 'RTSP',
+            stream: 'RTP-Unicast',
             profileToken: profile.$.token,
           })
           .catch((e) => {
@@ -475,8 +475,8 @@ class Onvif extends utils.Adapter {
           });
         streamUris[profile.name].live_stream_udp = await promisify(cam.getStreamUri)
           .bind(cam)({
-            protocol: "UDP",
-            stream: "RTP-Unicast",
+            protocol: 'UDP',
+            stream: 'RTP-Unicast',
             profileToken: profile.$.token,
           })
           .catch((e) => {
@@ -484,8 +484,8 @@ class Onvif extends utils.Adapter {
           });
         streamUris[profile.name].live_stream_multicast = await promisify(cam.getStreamUri)
           .bind(cam)({
-            protocol: "UDP",
-            stream: "RTP-Multicast",
+            protocol: 'UDP',
+            stream: 'RTP-Multicast',
             profileToken: profile.$.token,
           })
           .catch((e) => {
@@ -493,8 +493,8 @@ class Onvif extends utils.Adapter {
           });
         streamUris[profile.name].http_stream = await promisify(cam.getStreamUri)
           .bind(cam)({
-            protocol: "HTTP",
-            stream: "RTP-Unicast",
+            protocol: 'HTTP',
+            stream: 'RTP-Unicast',
             profileToken: profile.$.token,
           })
           .catch((e) => {
@@ -534,16 +534,16 @@ class Onvif extends utils.Adapter {
       this.log.warn(`${cam.hostname}:${cam.port} No profiles found to receive snapshot or stream urls`);
     }
 
-    const id = `${cam.hostname}_${cam.port}`.replace(/\./g, "_");
-    let name = "";
+    const id = `${cam.hostname}_${cam.port}`.replace(/\./g, '_');
+    let name = '';
     if (deviceInformation && deviceInformation.manufacturer) {
-      name += deviceInformation.manufacturer + " ";
+      name += deviceInformation.manufacturer + ' ';
     }
     if (deviceInformation && deviceInformation.model) {
-      name += deviceInformation.model + " ";
+      name += deviceInformation.model + ' ';
     }
 
-    name += cam.hostname + ":" + cam.port;
+    name += cam.hostname + ':' + cam.port;
 
     const native = {
       id: id,
@@ -556,64 +556,64 @@ class Onvif extends utils.Adapter {
     };
 
     snapshotUrl && (native.snapshotUrl = snapshotUrl);
-    majorStreamUrl && (native.majorStreamUrl = majorStreamUrl.replace("rtsp://", "rtsp://" + cam.username + ":" + cam.password + "@"));
-    minorStreamUrl && (native.minorStreamUrl = minorStreamUrl.replace("rtsp://", "rtsp://" + cam.username + ":" + cam.password + "@"));
+    majorStreamUrl && (native.majorStreamUrl = majorStreamUrl.replace('rtsp://', 'rtsp://' + cam.username + ':' + cam.password + '@'));
+    minorStreamUrl && (native.minorStreamUrl = minorStreamUrl.replace('rtsp://', 'rtsp://' + cam.username + ':' + cam.password + '@'));
     this.log.debug(`Creating camera ${id} with native ${JSON.stringify(native)} and rinfo ${JSON.stringify(rinfo)}`);
     await this.extendObjectAsync(id, {
-      type: "device",
+      type: 'device',
       common: {
         name: name,
       },
       native: native,
     });
-    await this.setObjectNotExistsAsync(id + ".events", {
-      type: "channel",
+    await this.setObjectNotExistsAsync(id + '.events', {
+      type: 'channel',
       common: {
-        name: "Camera Events. If empty trigger the event on the camera",
+        name: 'Camera Events. If empty trigger the event on the camera',
       },
       native: {},
     });
-    await this.setObjectNotExistsAsync(id + ".remote", {
-      type: "channel",
+    await this.setObjectNotExistsAsync(id + '.remote', {
+      type: 'channel',
       common: {
-        name: "Remote Controls",
+        name: 'Remote Controls',
       },
       native: {},
     });
-    await this.setObjectNotExistsAsync(id + ".infos", {
-      type: "channel",
+    await this.setObjectNotExistsAsync(id + '.infos', {
+      type: 'channel',
       common: {
-        name: "Infos via ONVIF",
+        name: 'Infos via ONVIF',
       },
       native: {},
     });
-    await this.setObjectNotExistsAsync(id + ".connection", {
-      type: "state",
+    await this.setObjectNotExistsAsync(id + '.connection', {
+      type: 'state',
       common: {
-        name: "Connection to camera",
-        type: "boolean",
-        role: "indicator.connected",
+        name: 'Connection to camera',
+        type: 'boolean',
+        role: 'indicator.connected',
         def: true,
         write: false,
         read: true,
       },
       native: {},
     });
-    await this.setStateAsync(id + ".connection", true, true);
+    await this.setStateAsync(id + '.connection', true, true);
 
     const remoteArray = [
-      { command: "Refresh", name: "True = Refresh" },
-      { command: "snapshot", name: "True = Switch On, False = Switch Off" },
-      { command: "gotoPreset", name: "PTZ preset (1 or 001)", type: "string", role: "text", def: "0" },
-      { command: "gotoHomePosition", name: "Goto Home Position" },
+      { command: 'Refresh', name: 'True = Refresh' },
+      { command: 'snapshot', name: 'True = Switch On, False = Switch Off' },
+      { command: 'gotoPreset', name: 'PTZ preset (1 or 001)', type: 'string', role: 'text', def: '0' },
+      { command: 'gotoHomePosition', name: 'Goto Home Position' },
     ];
     remoteArray.forEach((remote) => {
-      this.extendObject(id + ".remote." + remote.command, {
-        type: "state",
+      this.extendObject(id + '.remote.' + remote.command, {
+        type: 'state',
         common: {
-          name: remote.name || "",
-          type: remote.type || "boolean",
-          role: remote.role || "button",
+          name: remote.name || '',
+          type: remote.type || 'boolean',
+          role: remote.role || 'button',
           def: remote.def != null ? remote.def : false,
           write: true,
           read: true,
@@ -622,37 +622,37 @@ class Onvif extends utils.Adapter {
       });
     });
 
-    this.json2iob.parse(id + ".general", cam, {
+    this.json2iob.parse(id + '.general', cam, {
       forceIndex: true,
       removePasswords: true,
-      channelName: "General Information",
+      channelName: 'General Information',
     });
-    this.json2iob.parse(id + ".infos.timeDate", timeDate, { forceIndex: true, channelName: "Time Date" });
-    this.json2iob.parse(id + ".infos.presets", presets, { forceIndex: true, channelName: "Presets of active source" });
-    this.json2iob.parse(id + ".infos.deviceInformation", deviceInformation, {
+    this.json2iob.parse(id + '.infos.timeDate', timeDate, { forceIndex: true, channelName: 'Time Date' });
+    this.json2iob.parse(id + '.infos.presets', presets, { forceIndex: true, channelName: 'Presets of active source' });
+    this.json2iob.parse(id + '.infos.deviceInformation', deviceInformation, {
       forceIndex: true,
-      channelName: "Device Information",
+      channelName: 'Device Information',
     });
-    this.json2iob.parse(id + ".infos.deviceProfiles", deviceProfiles, {
+    this.json2iob.parse(id + '.infos.deviceProfiles', deviceProfiles, {
       forceIndex: true,
-      channelName: "Device Profiles",
+      channelName: 'Device Profiles',
     });
-    this.json2iob.parse(id + ".infos.deviceCapabilities", deviceCapabilities, {
+    this.json2iob.parse(id + '.infos.deviceCapabilities', deviceCapabilities, {
       forceIndex: true,
-      channelName: "Device Capabilities",
+      channelName: 'Device Capabilities',
     });
-    this.json2iob.parse(id + ".infos.deviceServices", deviceServices, {
+    this.json2iob.parse(id + '.infos.deviceServices', deviceServices, {
       forceIndex: true,
-      channelName: "Device Services",
+      channelName: 'Device Services',
     });
-    this.json2iob.parse(id + ".infos.deviceServicesCapabilities", deviceServicesCapabilities, {
+    this.json2iob.parse(id + '.infos.deviceServicesCapabilities', deviceServicesCapabilities, {
       forceIndex: true,
-      channelName: "Device Services Capabilities",
+      channelName: 'Device Services Capabilities',
     });
-    this.json2iob.parse(id + ".infos.scopes", scopes, { forceIndex: true, channelName: "Scopes" });
-    this.json2iob.parse(id + ".infos.videoSources", videoSources, { forceIndex: true, channelName: "Video Sources" });
-    this.json2iob.parse(id + ".infos.status", status, { forceIndex: true, channelName: "Status" });
-    this.json2iob.parse(id + ".infos.streamUris", streamUris, { forceIndex: true, channelName: "Stream Uris" });
+    this.json2iob.parse(id + '.infos.scopes', scopes, { forceIndex: true, channelName: 'Scopes' });
+    this.json2iob.parse(id + '.infos.videoSources', videoSources, { forceIndex: true, channelName: 'Video Sources' });
+    this.json2iob.parse(id + '.infos.status', status, { forceIndex: true, channelName: 'Status' });
+    this.json2iob.parse(id + '.infos.streamUris', streamUris, { forceIndex: true, channelName: 'Stream Uris' });
     return native;
   }
 
@@ -675,64 +675,64 @@ class Onvif extends utils.Adapter {
         },
       );
       // @ts-ignore
-      cam.on("rawResponse", (data) => {
-        this.log.debug("Raw response: " + data);
+      cam.on('rawResponse', (data) => {
+        this.log.debug('Raw response: ' + data);
       });
       // @ts-ignore
-      cam.on("rawRequest", (data) => {
-        this.log.debug("Raw request: " + data);
+      cam.on('rawRequest', (data) => {
+        this.log.debug('Raw request: ' + data);
       });
       // @ts-ignore
-      cam.on("connect", () => {
-        this.log.debug("Connected to " + cam.hostname + ":" + cam.port);
+      cam.on('connect', () => {
+        this.log.debug('Connected to ' + cam.hostname + ':' + cam.port);
       });
     });
   }
   async getSnapshot(id) {
     const native = this.deviceNatives[id];
     if (!native) {
-      this.log.error("No native found for cam " + id + " cannot get snapshot");
+      this.log.error('No native found for cam ' + id + ' cannot get snapshot');
       return;
     }
     //check last snapshot was more than 5 seconds ago
     if (native.lastSnapshot && native.lastSnapshot + 500 > Date.now()) {
-      this.log.debug("Last snapshot was less than 0.5 seconds ago. Skip snapshot");
+      this.log.debug('Last snapshot was less than 0.5 seconds ago. Skip snapshot');
       return;
     }
     this.deviceNatives[id].lastSnapshot = Date.now();
 
     if (!native || !native.snapshotUrl) {
-      this.log.debug("No snapshot url found for " + id + " try ffmpeg as fallback");
+      this.log.debug('No snapshot url found for ' + id + ' try ffmpeg as fallback');
       if (!this.ffmpeg) {
-        this.ffmpeg = require("fluent-ffmpeg");
-        const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
-        const ffprobePath = require("@ffprobe-installer/ffprobe").path;
+        this.ffmpeg = require('fluent-ffmpeg');
+        const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+        const ffprobePath = require('@ffprobe-installer/ffprobe').path;
         this.ffmpeg.setFfmpegPath(ffmpegPath);
         this.ffmpeg.setFfprobePath(ffprobePath);
       }
       return new Promise((resolve, reject) => {
         const url = this.config.useHighRes ? native.majorStreamUrl : native.minorStreamUrl || native.majorStreamUrl;
         if (!url) {
-          this.log.error("No stream url found for " + id + " cannot get snapshot. Delete cam under objects and restart adapter");
+          this.log.error('No stream url found for ' + id + ' cannot get snapshot. Delete cam under objects and restart adapter');
           resolve(null);
           return;
         }
 
         const command = this.ffmpeg(url)
-          .inputOptions(["-rtsp_transport tcp"])
-          .addOptions(["-f", "image2", "-vframes", "1"])
-          .on("error", (err) => {
-            this.log.error("An ffmpeg error occurred: " + err.message);
+          .inputOptions(['-rtsp_transport tcp'])
+          .addOptions(['-f', 'image2', '-vframes', '1'])
+          .on('error', (err) => {
+            this.log.error('An ffmpeg error occurred: ' + err.message);
             reject(err);
           })
-          .on("end", () => {});
+          .on('end', () => {});
 
         const ffstream = command.pipe();
         const buffers = [];
-        ffstream.on("data", (chunk) => {
+        ffstream.on('data', (chunk) => {
           buffers.push(chunk);
         });
-        ffstream.on("end", async () => {
+        ffstream.on('end', async () => {
           const buffer = Buffer.concat(buffers);
           resolve(buffer);
         });
@@ -740,38 +740,38 @@ class Onvif extends utils.Adapter {
     } else {
       const snapshotUrl = native.snapshotUrl;
       const response = await request(snapshotUrl, {
-        method: "GET",
+        method: 'GET',
         auth: `${native.user}:${native.password}`,
         timeout: 7000,
       })
         .then(async (response) => {
           if (response.status === 401) {
-            this.log.debug("Basic auth failed, trying digest auth");
+            this.log.debug('Basic auth failed, trying digest auth');
             //if basic auth fails try digest auth
             return await request(snapshotUrl, {
-              method: "GET",
+              method: 'GET',
               digestAuth: `${native.user}:${native.password}`,
             })
               .then((response) => {
                 if (response.status >= 400) {
-                  this.log.error("Error getting snapshot via digest: " + JSON.stringify(response));
+                  this.log.error('Error getting snapshot via digest: ' + JSON.stringify(response));
                   this.log.error(Buffer.from(response.data).toString());
                   return;
                 }
                 return response.data;
               })
               .catch((e) => {
-                this.log.error("Error getting snapshot via basic: " + JSON.stringify(e));
+                this.log.error('Error getting snapshot via basic: ' + JSON.stringify(e));
               });
           }
           if (response.status >= 400) {
-            this.log.error("Error getting snapshot basic: " + JSON.stringify(response));
+            this.log.error('Error getting snapshot basic: ' + JSON.stringify(response));
             return;
           }
           return response.data;
         })
         .catch((e) => {
-          this.log.error("Error getting snapshot: " + JSON.stringify(e));
+          this.log.error('Error getting snapshot: ' + JSON.stringify(e));
         });
       return response;
     }
@@ -781,7 +781,7 @@ class Onvif extends utils.Adapter {
     try {
       const ipRange = this.generateRange(options.startIp, options.endIp);
       const devices = [];
-      const portArray = options.port.replace(/\s/g, "").split(",");
+      const portArray = options.port.replace(/\s/g, '').split(',');
       for (const ip of ipRange) {
         for (const port of portArray) {
           const deviceName = await this.initDevice({
@@ -791,22 +791,22 @@ class Onvif extends utils.Adapter {
             password: options.password,
           })
             .then(async (cam) => {
-              this.log.info("Device successful initialized via manual search: " + cam.hostname + ":" + cam.port + " with IP " + cam.ip);
+              this.log.info('Device successful initialized via manual search: ' + cam.hostname + ':' + cam.port + ' with IP ' + cam.ip);
               if (!cam.ip) {
-                this.log.info("No IP found, using hostname instead");
+                this.log.info('No IP found, using hostname instead');
                 this.log.debug(JSON.stringify(cam));
                 cam.ip = cam.hostname;
               }
               const native = await this.fetchCameraInfos(cam, { address: cam.ip });
               this.deviceNatives[native.id] = native;
               this.devices[cam.hostname] = cam;
-              cam.on("event", this.processEvent.bind(this, { native: native }));
+              cam.on('event', this.processEvent.bind(this, { native: native }));
 
               return native.name;
             })
             .catch((error) => {
-              this.log.error(`Failed to login to ${ip}:${port}` + " with " + options.user + ":" + this.maskPassword(options.password));
-              this.log.info("Error " + error.err);
+              this.log.error(`Failed to login to ${ip}:${port}` + ' with ' + options.user + ':' + this.maskPassword(options.password));
+              this.log.info('Error ' + error.err);
               this.log.debug(error.err.stack);
 
               this.log.info(`Data: ${JSON.stringify(error.data)} xml: ${error.xml}`);
@@ -818,38 +818,38 @@ class Onvif extends utils.Adapter {
       }
       return devices;
     } catch (e) {
-      this.log.error("Error searching for devices: " + e);
+      this.log.error('Error searching for devices: ' + e);
       return;
     }
   }
   async cleanOldVersion() {
-    const cleanOldVersion = await this.getObjectAsync("oldVersionCleaned");
+    const cleanOldVersion = await this.getObjectAsync('oldVersionCleaned');
     if (!cleanOldVersion) {
-      this.log.info("Clean old version devices");
+      this.log.info('Clean old version devices');
       try {
-        await this.delObjectAsync("", { recursive: true });
+        await this.delObjectAsync('', { recursive: true });
       } catch (error) {
-        this.log.error("Error cleaning old version devices: " + error);
-        this.log.info("Please update node and js-controller to latest version");
+        this.log.error('Error cleaning old version devices: ' + error);
+        this.log.info('Please update node and js-controller to latest version');
       }
-      await this.setObjectNotExistsAsync("oldVersionCleaned", {
-        type: "state",
+      await this.setObjectNotExistsAsync('oldVersionCleaned', {
+        type: 'state',
         common: {
-          name: "oldVersionCleaned",
-          type: "boolean",
-          role: "indicator",
+          name: 'oldVersionCleaned',
+          type: 'boolean',
+          role: 'indicator',
           write: false,
           read: true,
         },
         native: {},
       });
-      this.log.info("Done with cleaning");
+      this.log.info('Done with cleaning');
       return true;
     }
   }
   maskPassword(password) {
     if (!password) return password;
-    let replaced = password.replace(/./g, "*");
+    let replaced = password.replace(/./g, '*');
     //use first and last character of password
     replaced = password.charAt(0) + replaced.substring(1, replaced.length - 1) + password.charAt(password.length - 1);
     return replaced;
@@ -873,7 +873,7 @@ class Onvif extends utils.Adapter {
   //toLong taken from NPM package 'ip'
   toLong(ip) {
     let ipl = 0;
-    ip.split(".").forEach(function (octet) {
+    ip.split('.').forEach(function (octet) {
       ipl <<= 8;
       ipl += parseInt(octet);
     });
@@ -882,7 +882,7 @@ class Onvif extends utils.Adapter {
 
   //fromLong taken from NPM package 'ip'
   fromLong(ipl) {
-    return (ipl >>> 24) + "." + ((ipl >> 16) & 255) + "." + ((ipl >> 8) & 255) + "." + (ipl & 255);
+    return (ipl >>> 24) + '.' + ((ipl >> 16) & 255) + '.' + ((ipl >> 8) & 255) + '.' + (ipl & 255);
   }
   async sleep(ms) {
     return new Promise((resolve) => {
@@ -901,24 +901,24 @@ class Onvif extends utils.Adapter {
     }
   }
   async onMessage(obj) {
-    if (typeof obj === "object" && obj.message) {
-      if (obj.command === "send") {
+    if (typeof obj === 'object' && obj.message) {
+      if (obj.command === 'send') {
         // e.g. send email or pushover or whatever
-        console.log("send command");
+        console.log('send command');
       }
-      if (obj.command === "discover") {
+      if (obj.command === 'discover') {
         this.log.debug(`discover for ${obj.message}`);
         this.config.user = obj.message.user;
         this.config.password = obj.message.password;
         this.discoveredDevices = [];
-        this.log.info("Starting discovery");
+        this.log.info('Starting discovery');
         await promisify(Discovery.probe)().catch((err) => {
-          this.log.error("Error during discovery: " + err);
+          this.log.error('Error during discovery: ' + err);
           this.sendTo(obj.from, obj.command, { error: `Discovery failed` }, obj.callback);
           return;
         });
         await this.sleep(5000);
-        this.log.info("Discovery finished");
+        this.log.info('Discovery finished');
         this.log.info(`Added ${this.discoveredDevices.length} cameras: ${JSON.stringify(this.discoveredDevices, null, 2)}`);
         obj.callback &&
           this.sendTo(
@@ -934,12 +934,12 @@ class Onvif extends utils.Adapter {
             obj.callback,
           );
       }
-      if (obj.command === "manualSearch") {
+      if (obj.command === 'manualSearch') {
         this.log.debug(`manualSearch for ${JSON.stringify(obj.message)}`);
-        this.log.info("Starting manual search");
+        this.log.info('Starting manual search');
         const deviceArray = (await this.manualSearch(obj.message)) || [];
-        this.log.info("Manual search finished");
-        this.log.info("Found devices: " + deviceArray);
+        this.log.info('Manual search finished');
+        this.log.info('Found devices: ' + deviceArray);
         obj.callback &&
           this.sendTo(
             obj.from,
@@ -948,17 +948,17 @@ class Onvif extends utils.Adapter {
             obj.callback,
           );
       }
-      if (obj.command === "snapshot") {
+      if (obj.command === 'snapshot') {
         this.log.debug(`snapshot for ${obj.message}`);
         const snapshot = await this.getSnapshot(obj.message);
         if (snapshot) {
           this.sendTo(obj.from, obj.command, snapshot, obj.callback);
         }
       }
-      if (obj.command === "getSnapshot") {
+      if (obj.command === 'getSnapshot') {
         this.log.debug(`getSnapshot for ${obj.message}`);
         if (!obj.message.id) {
-          this.log.error("No id found for getSnapshot");
+          this.log.error('No id found for getSnapshot');
           return;
         }
         const snapshot = await this.getSnapshot(obj.message.id);
@@ -977,49 +977,49 @@ class Onvif extends utils.Adapter {
   async onStateChange(id, state) {
     if (state) {
       if (!state.ack) {
-        const deviceId = id.split(".")[2];
-        const folder = id.split(".")[3];
-        if (folder != "remote") {
+        const deviceId = id.split('.')[2];
+        const folder = id.split('.')[3];
+        if (folder != 'remote') {
           return;
         }
-        const command = id.split(".")[4];
+        const command = id.split('.')[4];
         const deviceObject = await this.getObjectAsync(deviceId);
         if (!deviceObject || !deviceObject.native || !deviceObject.native.ip) {
-          this.log.warn("No ip found for " + deviceId);
+          this.log.warn('No ip found for ' + deviceId);
           return;
         }
         const cam = this.devices[deviceObject.native.ip];
-        if (command === "Refresh") {
+        if (command === 'Refresh') {
           if (!cam) {
-            this.log.warn("No camera found for " + deviceId + " with ip " + deviceObject.native.ip);
+            this.log.warn('No camera found for ' + deviceId + ' with ip ' + deviceObject.native.ip);
             return;
           }
           this.fetchCameraInfos(cam, { address: deviceObject.native.ip });
           return;
         }
-        if (command === "snapshot") {
+        if (command === 'snapshot') {
           const snapshot = await this.getSnapshot(deviceId);
           if (snapshot) {
-            await this.setObjectNotExistsAsync(deviceId + ".snapshot", {
-              type: "state",
+            await this.setObjectNotExistsAsync(deviceId + '.snapshot', {
+              type: 'state',
               common: {
-                name: "Snapshot",
-                type: "string",
-                role: "image",
+                name: 'Snapshot',
+                type: 'string',
+                role: 'image',
                 read: true,
                 write: false,
               },
               native: {},
             });
-            await this.setStateAsync(deviceId + ".snapshot", `data:image/jpg;base64,${Buffer.from(snapshot).toString("base64")}`, true);
+            await this.setStateAsync(deviceId + '.snapshot', `data:image/jpg;base64,${Buffer.from(snapshot).toString('base64')}`, true);
             this.log.info(`Snapshot saved in state ${deviceId}.snapshot`);
           }
           return;
         }
 
-        if (command === "gotoPreset") {
+        if (command === 'gotoPreset') {
           if (!cam) {
-            this.log.warn("No camera found for " + deviceId + " with ip " + deviceObject.native.ip);
+            this.log.warn('No camera found for ' + deviceId + ' with ip ' + deviceObject.native.ip);
             return;
           }
           await promisify(cam[command])
@@ -1034,7 +1034,7 @@ class Onvif extends utils.Adapter {
         }
         if (cam[command]) {
           if (!cam) {
-            this.log.warn("No camera found for " + deviceId + " with ip " + deviceObject.native.ip);
+            this.log.warn('No camera found for ' + deviceId + ' with ip ' + deviceObject.native.ip);
             return;
           }
           await promisify(cam[command])
