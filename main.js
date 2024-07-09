@@ -701,7 +701,7 @@ class Onvif extends utils.Adapter {
     }
     this.deviceNatives[id].lastSnapshot = Date.now();
 
-    if (!native || !native.snapshotUrl) {
+    if (!native || !native.snapshotUrl || this.config.useHighRes) {
       this.log.debug('No snapshot url found for ' + id + ' try ffmpeg as fallback');
       if (!this.ffmpeg) {
         this.ffmpeg = require('fluent-ffmpeg');
