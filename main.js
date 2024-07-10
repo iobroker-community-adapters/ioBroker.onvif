@@ -452,7 +452,10 @@ class Onvif extends utils.Adapter {
           if (this.config.overwriteSnapshotPort) {
             //find generic port in url and replace it
             try {
-              const urlObject = new URL(snapshotUrl);
+              let urlObject = new URL(snapshotUrl);
+              if (this.config.overwriteUrl) {
+                urlObject = new URL(this.config.overwriteUrl);
+              }
               urlObject.port = cam.port;
               if (this.config.overwritePort) {
                 urlObject.port = this.config.overwritePort;

@@ -324,7 +324,7 @@
           "newLine": true,
           "type": "checkbox",
           "label": {
-            "en": "Overwrite snapshot url port with camera port",
+            "en": "Overwrite snapshot url and port with camera port",
             "de": "Überschreiben Snapshot url port mit kamera port",
             "ru": "Переписать снимок URL порт с портом камеры",
             "pt": "Sobrescrever a porta de URL do instantâneo com a porta da câmera",
@@ -337,6 +337,24 @@
             "zh-cn": "装有摄像机港口的外展"
           },
           "default": false
+        },
+        "overwriteUrl": {
+          "newLine": true,
+          "type": "text",
+          "label": {
+            "en": "Use custom url for snapshot url",
+            "de": "Verwenden Sie benutzerdefinierte URL für Snapshot url",
+            "ru": "Используйте пользовательский URL для Snapshot url",
+            "pt": "Use um URL personalizado para a URL do instantâneo",
+            "nl": "Gebruik een aangepaste url voor de url van de foto",
+            "fr": "Utilisez une URL personnalisée pour l'URL de l'instantané",
+            "it": "Utilizzare un URL personalizzato per l'URL dell'istantanea",
+            "es": "Utilice una URL personalizada para el URL de instantánea",
+            "pl": "Wykorzystaj niestandardowy adres URL dla adresu URL",
+            "uk": "Використовуйте користувальницький URL для URL знімка",
+            "zh-cn": "A. 使用习惯URL进行扫描"
+          },
+          "default": ""
         },
         "overwritePort": {
           "newLine": true,
