@@ -232,18 +232,25 @@ class Onvif extends utils.Adapter {
     }
   }
   async setEventState(device, id, name, value) {
-    await this.extendObjectAsync(device.native.id + '.events.' + id, {
+    let type = typeof value;
+    const eventState = await this.getObjectAsync(device.native.id + '.events.' + id);
+    const eventStateType = eventState.common.type;
+    if (eventStateType !== type) {
+      type = 'mixed';
+    }
+
+    await this.extendObject(device.native.id + '.events.' + id, {
       type: 'state',
       common: {
         name: name,
-        type: typeof value,
-        role: 'indicator',
+        type: type,
+        role: 'state',
         read: true,
         write: false,
       },
       native: {},
     });
-    await this.setStateAsync(device.native.id + '.events.' + id, value, true);
+    await this.setState(device.native.id + '.events.' + id, value, true);
   }
 
   sendSentry(event) {
