@@ -234,9 +234,11 @@ class Onvif extends utils.Adapter {
   async setEventState(device, id, name, value) {
     let type = typeof value;
     const eventState = await this.getObjectAsync(device.native.id + '.events.' + id);
-    const eventStateType = eventState.common.type;
-    if (eventStateType !== type) {
-      type = 'mixed';
+    if (eventState && eventState.common) {
+      const eventStateType = eventState.common.type;
+      if (eventStateType !== type) {
+        type = 'mixed';
+      }
     }
 
     await this.extendObject(device.native.id + '.events.' + id, {
