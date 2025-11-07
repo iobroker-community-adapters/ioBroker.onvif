@@ -113,6 +113,7 @@
     "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.onvif/main/admin/onvif.png",
     "readme": "https://github.com/iobroker-community-adapters/ioBroker.onvif/blob/main/README.md",
     "loglevel": "info",
+    "tier": 2,
     "mode": "daemon",
     "type": "infrastructure",
     "compact": true,
