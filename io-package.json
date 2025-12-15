@@ -107,7 +107,6 @@
     "keywords": ["onvif", "camera"],
     "license": "MIT",
     "platform": "Javascript/Node.js",
-    "main": "main.js",
     "icon": "onvif.png",
     "enabled": true,
     "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.onvif/main/admin/onvif.png",
