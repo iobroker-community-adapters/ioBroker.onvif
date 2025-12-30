@@ -2,10 +2,10 @@
   "name": "iobroker.onvif",
   "version": "1.1.4",
   "description": "Adapter for onvif cameras",
-  "author": {
-    "name": "TA2k",
-    "email": "tombox2020@gmail.com"
-  },
+  "author": "TA2k <tombox2020@gmail.com>",
+  "contributors": [
+    "iobroker-community-adapters <iobroker-community-adapters@gmx.de>"
+  ],
   "homepage": "https://github.com/iobroker-community-adapters/ioBroker.onvif",
   "license": "MIT",
   "keywords": [

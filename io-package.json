@@ -103,8 +103,14 @@
       "uk": "Адаптер для фотокамер",
       "zh-cn": "onvif 相机适配器"
     },
-    "authors": ["TA2k <tombox2020@gmail.com>"],
-    "keywords": ["onvif", "camera"],
+    "authors": [
+      "TA2k <tombox2020@gmail.com>",
+      "iobroker-community-adapters <iobroker-community-adapters@gmx.de>"
+    ],
+    "keywords": [
+      "onvif",
+      "camera"
+    ],
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "main": "main.js",
@@ -129,16 +135,18 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=3.3.22"
+        "js-controller": ">=6.0.11"
       }
     ],
     "globalDependencies": [
       {
-        "admin": ">=5.2.28"
+        "admin": ">=7.6.17"
       }
     ]
   },
-  "protectedNative": ["password"],
+  "protectedNative": [
+    "password"
+  ],
   "native": {
     "user": "admin",
     "password": "admin",
@@ -153,7 +161,10 @@
     {
       "condition": {
         "operand": "and",
-        "rules": ["oldVersion<1.0.0", "newVersion>=1.0.0"]
+        "rules": [
+          "oldVersion<1.0.0",
+          "newVersion>=1.0.0"
+        ]
       },
       "title": {
         "en": "Important notice!",
@@ -181,7 +192,10 @@
         "zh-cn": "适应者完全被改写,活动物品也发生了变化。 更新后,所有公认的摄像机都被删除,必须再次发现。."
       },
       "level": "warn",
-      "buttons": ["agree", "cancel"]
+      "buttons": [
+        "agree",
+        "cancel"
+      ]
     }
   ],
   "objects": [],
