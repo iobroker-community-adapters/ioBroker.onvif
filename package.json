@@ -9,6 +9,7 @@
   "homepage": "https://github.com/iobroker-community-adapters/ioBroker.onvif",
   "license": "MIT",
   "keywords": [
+    "ioBroker",
     "onvif",
     "camera"
   ],
