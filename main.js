@@ -12,8 +12,8 @@ const Json2iob = require('json2iob');
 const Cam = require('onvif').Cam;
 const xml2js = require('xml2js');
 const Discovery = require('onvif').Discovery;
-const { promisify } = require('util');
-const http = require('http');
+const { promisify } = require('node:util');
+const http = require('node:http');
 
 class Onvif extends utils.Adapter {
   /**
