@@ -12,8 +12,8 @@ const Json2iob = require('json2iob');
 const Cam = require('onvif').Cam;
 const xml2js = require('xml2js');
 const Discovery = require('onvif').Discovery;
-const { promisify } = require('util');
-const http = require('http');
+const { promisify } = require('node:util');
+const http = require('node:http');
 
 class Onvif extends utils.Adapter {
   /**
@@ -33,6 +33,12 @@ class Onvif extends utils.Adapter {
     this.devices = {};
     this.discoveredDevices = [];
     this.json2iob = new Json2iob(this);
+    // Watchdog timings. A healthy camera pulls messages roughly every 60s, so a gap of
+    // three minutes means the event loop has died.
+    this.CAM_CHECK_INTERVAL_MS = 60 * 1000;
+    this.CAM_STALE_MS = 3 * 60 * 1000;
+    this.checkRunning = false;
+    this.unloaded = false;
   }
 
   /**
@@ -79,7 +85,7 @@ class Onvif extends utils.Adapter {
           },
           native: {},
         });
-        camObj.on('event', this.processEvent.bind(this, device));
+        this.attachCamEvents(device, camObj);
 
         this.devices[camObj.hostname] = camObj;
         const native = await this.fetchCameraInfos(camObj, { address: device.native.ip });
@@ -94,42 +100,111 @@ class Onvif extends utils.Adapter {
       this.log.info('Starting snapshot server');
       await this.startServer();
     }
-    //reconnnect all cameras every 30min to prevent undetected disconnects and event lost
-    this.reconnectInterval = this.setInterval(
-      () => {
-        this.reconnectAllCameras();
-      },
-      1000 * 30 * 60,
-    );
-    this.log.debug('Reconnect interval set.  Next reconnect: ' + new Date(Date.now() + 1000 * 30 * 60));
+    // Watchdog: the onvif event pull loop dies silently on errors that are not in its
+    // retry list (e.g. "Network timeout", HTTP 5xx, SOAP faults) which happen while a
+    // camera reboots. It never restarts itself, so we monitor activity and rebuild the
+    // connection when a camera goes quiet.
+    this.watchdogInterval = this.setInterval(() => {
+      this.checkCameras();
+    }, this.CAM_CHECK_INTERVAL_MS);
+    this.log.debug('Camera watchdog started');
   }
 
-  async reconnectAllCameras() {
-    this.log.debug('Reconnecting all cameras ' + Object.keys(this.deviceNatives).length);
-    for (const deviceId in this.deviceNatives) {
-      const camNative = this.deviceNatives[deviceId];
-      this.log.debug(`Reconnecting to ${deviceId}`);
-      let cam = this.devices[camNative.ip];
-      if (!cam) {
-        cam = await this.devices[camNative.hostname];
-      }
-      if (!cam) {
-        this.log.info(`No cam found for ${deviceId}`);
-        continue;
-      }
-      await promisify(cam.connect)
-        .bind(cam)()
-        .then(() => {
-          this.setStateAsync(deviceId + '.connection', true, true);
-        })
-        .catch((e) => {
-          this.setStateAsync(deviceId + '.connection', false, true);
-          this.log.error(e);
-        });
+  /**
+   * Attach event and error listeners to a camera. Attaching the first 'event' listener
+   * bootstraps the onvif pull-point subscription loop.
+   * @param device object with a `native.id` property
+   * @param cam onvif Cam instance
+   */
+  attachCamEvents(device, cam) {
+    cam.lastActivity = Date.now();
+    cam.on('event', this.processEvent.bind(this, device));
+    cam.on('eventsError', (error) => {
+      const message = error && error.message ? error.message : error;
+      this.log.warn(`Event error for ${device.native.id}: ${message}`);
+      this.setState(device.native.id + '.connection', false, true);
+    });
+  }
 
-      // cam.removeListener("event", this.processEvent.bind(this, camNative));
-      // cam.on("event", this.processEvent.bind(this, camNative));
+  /**
+   * Check all cameras for recent ONVIF activity and rebuild the connection of any that
+   * went silent longer than CAM_STALE_MS. Guarded against overlapping runs: a slow
+   * reconnect must not let the next interval tick rebuild the same camera in parallel.
+   */
+  async checkCameras() {
+    if (this.checkRunning) {
+      this.log.debug('Watchdog still running, skipping this tick');
+      return;
     }
+    this.checkRunning = true;
+    try {
+      for (const deviceId in this.deviceNatives) {
+        if (this.unloaded) {
+          return;
+        }
+        const camNative = this.deviceNatives[deviceId];
+        const cam = this.devices[camNative.ip] || this.devices[camNative.hostname];
+        const lastActivity = cam && cam.lastActivity ? cam.lastActivity : 0;
+        const inactiveMs = Date.now() - lastActivity;
+        if (!cam || inactiveMs > this.CAM_STALE_MS) {
+          this.log.warn(`No ONVIF activity from ${deviceId} for ${Math.round(inactiveMs / 1000)}s, reconnecting`);
+          await this.rebuildCamera(deviceId);
+        } else {
+          this.log.debug(`Camera ${deviceId} last activity ${Math.round(inactiveMs / 1000)}s ago`);
+          // Activity resumed on its own, restore the connection state after a transient error.
+          this.setState(deviceId + '.connection', true, true);
+        }
+      }
+    } finally {
+      this.checkRunning = false;
+    }
+  }
+
+  /**
+   * Recreate the onvif Cam instance for a device. This re-runs connect and creates a
+   * fresh pull-point subscription, recovering an event loop that stopped after a reboot.
+   * @param {string} deviceId
+   */
+  async rebuildCamera(deviceId) {
+    const camNative = this.deviceNatives[deviceId];
+    if (!camNative) {
+      return;
+    }
+    const oldCam = this.devices[camNative.ip] || this.devices[camNative.hostname];
+    if (oldCam) {
+      // Removing the 'event' listeners lets the old pull loop stop itself.
+      oldCam.removeAllListeners('event');
+      oldCam.removeAllListeners('eventsError');
+    }
+    const newCam = await this.initDevice({
+      ip: camNative.ip,
+      port: camNative.port,
+      username: camNative.user,
+      password: camNative.password,
+    }).catch((error) => {
+      this.log.warn(`Reconnect to ${deviceId} failed: ${error.err}`);
+      return null;
+    });
+    // Adapter may have been unloaded while initDevice was awaiting. Do not resurrect it.
+    if (this.unloaded) {
+      if (newCam) {
+        newCam.removeAllListeners();
+      }
+      return;
+    }
+    if (!newCam) {
+      this.setStateAsync(deviceId + '.connection', false, true);
+      return;
+    }
+    // Drop any stale alias still pointing at the old Cam (hostname differing from ip).
+    if (oldCam && oldCam.hostname && oldCam.hostname !== newCam.hostname) {
+      delete this.devices[oldCam.hostname];
+    }
+    this.devices[newCam.hostname] = newCam;
+    this.devices[camNative.ip] = newCam;
+    this.attachCamEvents({ native: camNative }, newCam);
+    this.setStateAsync(deviceId + '.connection', true, true);
+    this.log.info(`Reconnected to ${deviceId}`);
   }
 
   async startServer() {
@@ -351,7 +426,7 @@ class Onvif extends utils.Adapter {
             this.deviceNatives[native.id] = native;
             this.discoveredDevices.push(native.name);
             this.devices[cam.hostname] = cam;
-            cam.on('event', this.processEvent.bind(this, { native: native }));
+            this.attachCamEvents({ native: native }, cam);
           })
           .catch((error) => {
             this.log.error(
@@ -688,6 +763,8 @@ class Onvif extends utils.Adapter {
       );
       // @ts-ignore
       cam.on('rawResponse', (data) => {
+        // Every successful pull/renew response marks the camera as alive for the watchdog.
+        cam.lastActivity = Date.now();
         this.log.debug('Raw response: ' + data);
       });
       // @ts-ignore
@@ -812,7 +889,7 @@ class Onvif extends utils.Adapter {
               const native = await this.fetchCameraInfos(cam, { address: cam.ip });
               this.deviceNatives[native.id] = native;
               this.devices[cam.hostname] = cam;
-              cam.on('event', this.processEvent.bind(this, { native: native }));
+              this.attachCamEvents({ native: native }, cam);
 
               return native.name;
             })
@@ -898,7 +975,7 @@ class Onvif extends utils.Adapter {
   }
   async sleep(ms) {
     return new Promise((resolve) => {
-      setTimeout(resolve, ms);
+      this.setTimeout(resolve, ms);
     });
   }
   /**
@@ -907,8 +984,24 @@ class Onvif extends utils.Adapter {
    */
   onUnload(callback) {
     try {
+      // Signals any in-flight watchdog/rebuild to abort instead of resurrecting a camera.
+      this.unloaded = true;
+      if (this.watchdogInterval) {
+        this.clearInterval(this.watchdogInterval);
+      }
+      // Drop the 'event' listeners so the onvif pull loops stop themselves.
+      for (const hostname in this.devices) {
+        const cam = this.devices[hostname];
+        if (cam && cam.removeAllListeners) {
+          cam.removeAllListeners('event');
+          cam.removeAllListeners('eventsError');
+        }
+      }
+      if (this.server) {
+        this.server.close();
+      }
       callback();
-    } catch (e) {
+    } catch {
       callback();
     }
   }

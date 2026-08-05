@@ -23,7 +23,11 @@
         "paddingTop": 50,
         "fontWeight": "bold",
         "font-size": "1.3rem"
-      }
+      },
+      "xs": 12,
+      "md": 12,
+      "lg": 12,
+      "xl": 12
     },
     "user": {
       "type": "text",
@@ -41,7 +45,11 @@
         "zh-cn": "Camera用户"
       },
       "newLine": true,
-      "sm": 3
+      "sm": 3,
+      "xs": 12,
+      "md": 3,
+      "lg": 3,
+      "xl": 3
     },
     "password": {
       "type": "password",
@@ -61,7 +69,11 @@
         "pl": "Camera password",
         "uk": "Пароль камери",
         "zh-cn": "Camera密码"
-      }
+      },
+      "xs": 12,
+      "md": 3,
+      "lg": 3,
+      "xl": 3
     },
     "_discover": {
       "newLine": true,
@@ -87,7 +99,12 @@
         "pl": "Oficjalna strona Discovery",
         "uk": "Старт камери Discovery",
         "zh-cn": "B. 自卡迈拉人解"
-      }
+      },
+      "xs": 12,
+      "sm": 12,
+      "md": 12,
+      "lg": 12,
+      "xl": 12
     },
     "_manual": {
       "newLine": true,
@@ -127,7 +144,11 @@
             "paddingTop": 50,
             "fontWeight": "bold",
             "font-size": "1.3rem"
-          }
+          },
+          "xs": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "startIp": {
           "type": "text",
@@ -135,7 +156,9 @@
           "md": 6,
           "lg": 4,
           "label": "Start Ip",
-          "default": "192.168.178.1"
+          "default": "192.168.178.1",
+          "xs": 12,
+          "xl": 4
         },
         "endIp": {
           "type": "text",
@@ -143,7 +166,9 @@
           "md": 6,
           "lg": 4,
           "label": "End Ip",
-          "default": "192.168.178.255"
+          "default": "192.168.178.255",
+          "xs": 12,
+          "xl": 4
         },
         "port": {
           "type": "text",
@@ -151,11 +176,12 @@
           "md": 6,
           "lg": 4,
           "label": "Port",
-          "default": "80, 7575, 8000, 8080, 8081, 8899"
+          "default": "80, 7575, 8000, 8080, 8081, 8899",
+          "xs": 12,
+          "xl": 4
         },
         "_manualDiscover": {
           "newLine": true,
-
           "variant": "contained",
           "color": "primary",
           "disabled": "!_alive",
@@ -181,7 +207,12 @@
           },
           "result": {
             "ok": "See log output for results"
-          }
+          },
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         }
       }
     },
@@ -210,7 +241,11 @@
             "paddingTop": 50,
             "fontWeight": "bold",
             "font-size": "1rem"
-          }
+          },
+          "xs": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "activateServer": {
           "newLine": true,
@@ -228,7 +263,12 @@
             "uk": "Статус на сервери",
             "zh-cn": "代理服务商"
           },
-          "default": false
+          "default": false,
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "useHighRes": {
           "newLine": true,
@@ -246,13 +286,23 @@
             "uk": "Використання джерела з високою роздільною здатністю для перетворення ffmpeg.",
             "zh-cn": "利用高分辨率转用源。."
           },
-          "default": false
+          "default": false,
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "serverPort": {
           "newLine": true,
           "type": "text",
           "label": "Server Port",
-          "default": "8095"
+          "default": "8095",
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         }
       }
     },
@@ -293,7 +343,11 @@
             "paddingTop": 50,
             "fontWeight": "bold",
             "font-size": "1rem"
-          }
+          },
+          "xs": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "_readMeHint": {
           "type": "staticLink",
@@ -318,7 +372,11 @@
             "paddingTop": 50,
             "fontWeight": "bold",
             "font-size": "1rem"
-          }
+          },
+          "xs": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "overwriteSnapshotPort": {
           "newLine": true,
@@ -336,7 +394,12 @@
             "uk": "Overwrite snapshot url порт з портом камери",
             "zh-cn": "装有摄像机港口的外展"
           },
-          "default": false
+          "default": false,
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "overwriteUrl": {
           "newLine": true,
@@ -354,7 +417,12 @@
             "uk": "Використовуйте користувальницький URL для URL знімка",
             "zh-cn": "A. 使用习惯URL进行扫描"
           },
-          "default": ""
+          "default": "",
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "overwritePort": {
           "newLine": true,
@@ -372,7 +440,12 @@
             "uk": "Використовуйте користувальницький порт для знімків URL",
             "zh-cn": "A. 使用习惯港口进行扫描"
           },
-          "default": ""
+          "default": null,
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         }
       }
     }
