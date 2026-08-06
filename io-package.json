@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "news": {
+      "1.1.5": {
+        "en": "Reconnect flow improved\nAdapter requires node.js >= 22 now",
+        "de": "Wiederverbindungsprozess verbessert\nDer Adapter benötigt jetzt Node.js >= 22.",
+        "ru": "Улучшен поток повторного подключения\nДля работы адаптера требуется Node.js версии >= 22.",
+        "pt": "Fluxo de reconexão aprimorado\nO adaptador agora requer Node.js >= 22.",
+        "nl": "De verbindingsstroom is verbeterd\nDe adapter vereist nu Node.js versie 22 of hoger.",
+        "fr": "Amélioration du flux de reconnexion\nL'adaptateur nécessite désormais Node.js >= 22.",
+        "it": "Riconnessione del flusso migliorata\nL'adattatore ora richiede Node.js >= 22",
+        "es": "El flujo de reconexión ha mejorado.\nEl adaptador ahora requiere node.js >= 22.",
+        "pl": "Ulepszony przepływ ponownego łączenia\nAdapter wymaga teraz node.js >= 22",
+        "uk": "Покращено процес повторного підключення\nАдаптер тепер вимагає node.js >= 22",
+        "zh-cn": "重新连接流程得到改善\n适配器现在需要 node.js 版本 >= 22。"
+      },
       "1.1.4": {
         "en": "update onvif lib to support newer TAPO cameras\nAdapter requires nodejs >=18 now.",
         "de": "Aktualisierung onvif lib zur Unterstützung neuerer TAPO-Kameras\nAdapter benötigt jetzt nodejs >=18.",
@@ -99,8 +112,14 @@
       "uk": "Адаптер для фотокамер",
       "zh-cn": "onvif 相机适配器"
     },
-    "authors": ["TA2k <tombox2020@gmail.com>", "iobroker-community-adapters <iobroker-community-adapters@gmx.de>"],
-    "keywords": ["onvif", "camera"],
+    "authors": [
+      "TA2k <tombox2020@gmail.com>",
+      "iobroker-community-adapters <iobroker-community-adapters@gmx.de>"
+    ],
+    "keywords": [
+      "onvif",
+      "camera"
+    ],
     "licenseInformation": {
       "type": "free",
       "license": "MIT"
@@ -140,7 +159,10 @@
       {
         "condition": {
           "operand": "and",
-          "rules": ["oldVersion<1.0.0", "newVersion>=1.0.0"]
+          "rules": [
+            "oldVersion<1.0.0",
+            "newVersion>=1.0.0"
+          ]
         },
         "title": {
           "en": "Important notice!",
@@ -168,11 +190,16 @@
           "zh-cn": "适应者完全被改写,活动物品也发生了变化。 更新后,所有公认的摄像机都被删除,必须再次发现。."
         },
         "level": "warn",
-        "buttons": ["agree", "cancel"]
+        "buttons": [
+          "agree",
+          "cancel"
+        ]
       }
     ]
   },
-  "protectedNative": ["password"],
+  "protectedNative": [
+    "password"
+  ],
   "native": {
     "user": "admin",
     "password": "admin",
