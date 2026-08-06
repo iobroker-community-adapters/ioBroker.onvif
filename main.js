@@ -33,10 +33,18 @@ class Onvif extends utils.Adapter {
     this.devices = {};
     this.discoveredDevices = [];
     this.json2iob = new Json2iob(this);
-    // Watchdog timings. A healthy camera pulls messages roughly every 60s, so a gap of
-    // three minutes means the event loop has died.
-    this.CAM_CHECK_INTERVAL_MS = 60 * 1000;
-    this.CAM_STALE_MS = 3 * 60 * 1000;
+    // Watchdog timings. A healthy but idle camera keeps a PullMessages request open for up
+    // to ~60s (the onvif library uses an 80s reply timeout), so the silent backstop must
+    // stay above that to avoid rebuilding a working connection. The error-stale threshold
+    // is much shorter: it only applies once a camera has actually reported an event error,
+    // which is the reboot case and cannot be confused with a healthy idle camera.
+    this.CAM_CHECK_INTERVAL_MS = 30 * 1000;
+    this.CAM_STALE_MS = 100 * 1000;
+    this.CAM_ERROR_STALE_MS = 20 * 1000;
+    // The onvif library retries a lost event loop with a 10ms-growing backoff, so it emits
+    // dozens of identical eventsError within seconds while a camera reboots. Log the first
+    // one and any change of message immediately, then at most one per this window.
+    this.CAM_ERROR_LOG_THROTTLE_MS = 30 * 1000;
     this.checkRunning = false;
     this.unloaded = false;
   }
@@ -118,10 +126,21 @@ class Onvif extends utils.Adapter {
    */
   attachCamEvents(device, cam) {
     cam.lastActivity = Date.now();
+    cam.lastError = 0;
+    cam.lastErrorLog = 0;
+    cam.lastErrorMessage = null;
     cam.on('event', this.processEvent.bind(this, device));
     cam.on('eventsError', (error) => {
-      const message = error && error.message ? error.message : error;
-      this.log.warn(`Event error for ${device.native.id}: ${message}`);
+      const message = error && error.message ? error.message : String(error);
+      const now = Date.now();
+      cam.lastError = now;
+      // Throttle the flood: log the first error and any message change at once, then at most
+      // one line per throttle window. The watchdog handles the actual reconnect.
+      if (message !== cam.lastErrorMessage || now - cam.lastErrorLog > this.CAM_ERROR_LOG_THROTTLE_MS) {
+        this.log.warn(`Event error for ${device.native.id}: ${message}`);
+        cam.lastErrorLog = now;
+        cam.lastErrorMessage = message;
+      }
       this.setState(device.native.id + '.connection', false, true);
     });
   }
@@ -145,14 +164,22 @@ class Onvif extends utils.Adapter {
         const camNative = this.deviceNatives[deviceId];
         const cam = this.devices[camNative.ip] || this.devices[camNative.hostname];
         const lastActivity = cam && cam.lastActivity ? cam.lastActivity : 0;
+        const lastError = cam && cam.lastError ? cam.lastError : 0;
         const inactiveMs = Date.now() - lastActivity;
-        if (!cam || inactiveMs > this.CAM_STALE_MS) {
+        // The event loop is only healthy if its most recent request produced a response
+        // (rawResponse) after the last error. A camera that keeps erroring never advances
+        // lastActivity, so inError stays true and inactiveMs keeps growing.
+        const inError = lastError > lastActivity;
+        // Fast path: an actively erroring camera whose last success is older than the short
+        // error threshold (reboot). Backstop: any camera silent past the long threshold,
+        // which also covers a healthy but idle camera that quietly stopped pulling.
+        if (!cam || (inError && inactiveMs > this.CAM_ERROR_STALE_MS) || inactiveMs > this.CAM_STALE_MS) {
           this.log.warn(`No ONVIF activity from ${deviceId} for ${Math.round(inactiveMs / 1000)}s, reconnecting`);
           await this.rebuildCamera(deviceId);
         } else {
           this.log.debug(`Camera ${deviceId} last activity ${Math.round(inactiveMs / 1000)}s ago`);
-          // Activity resumed on its own, restore the connection state after a transient error.
-          this.setState(deviceId + '.connection', true, true);
+          // Reflect the real state: connection is up only when the event loop is not erroring.
+          this.setState(deviceId + '.connection', !inError, true);
         }
       }
     } finally {
