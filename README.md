@@ -299,7 +299,7 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
 -->
 ### 1.1.5 (2026-08-06)
 
-- Reconnect flow improved
+- (TA2k) Reconnect flow improved
 - (copilot) Adapter requires node.js >= 22 now
 - (copilot) Adapter requires admin >= 7.7.22 now
 - (copilot) Adapter requires js-controller >= 6.0.11 now
