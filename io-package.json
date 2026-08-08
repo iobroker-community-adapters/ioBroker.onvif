@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "news": {
+      "1.1.6": {
+        "en": "Reconnect flow improved",
+        "de": "Reconnect Flow verbessert",
+        "ru": "Улучшенный поток соединения",
+        "pt": "O fluxo de reconexão melhorou",
+        "nl": "Herkoppelstroom verbeterd",
+        "fr": "Reconnecter le flux amélioré",
+        "it": "Miglioramento del flusso di connessione",
+        "es": "Aumento del flujo de reconexión",
+        "pl": "Poprawa przepływu regeneracji",
+        "uk": "Покращений потік відключення",
+        "zh-cn": "重新连接流量得到改善"
+      },
       "1.1.5": {
         "en": "Reconnect flow improved\nAdapter requires node.js >= 22 now",
         "de": "Wiederverbindungsprozess verbessert\nDer Adapter benötigt jetzt Node.js >= 22.",
@@ -80,10 +93,6 @@
         "pl": "dodano do użytku standardowe iobraźnię\nniektóre zależności zostały zaktualizowane",
         "uk": "додано стандартне середовище вивільнення iobroker\nдеякі залежності були оновлено",
         "zh-cn": "添加了标准碘器释放环境\n已经更新了一些依赖性"
-      },
-      "1.1.0": {
-        "en": "Bugfixes",
-        "de": "Fehlerbehebungen"
       }
     },
     "titleLang": {

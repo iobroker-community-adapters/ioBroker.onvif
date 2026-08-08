@@ -297,9 +297,12 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### 1.1.5 (2026-08-06)
+### 1.1.6 (2026-08-08)
 
 - (TA2k) Reconnect flow improved
+
+### 1.1.5 (2026-08-06)
+
 - (copilot) Adapter requires node.js >= 22 now
 - (copilot) Adapter requires admin >= 7.7.22 now
 - (copilot) Adapter requires js-controller >= 6.0.11 now
@@ -316,11 +319,6 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
 ### 1.1.2 (2023-12-29)
 
 - (TA2k) Catch callback error
-
-### 1.1.1 (2023-10-18)
-
-- (mcm1957) Standard iobroker release environment has been added.
-- (mcm1957) Some dependencies have been updated.
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

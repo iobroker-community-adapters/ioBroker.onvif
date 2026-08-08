@@ -1,4 +1,9 @@
 # Older changes
+## 1.1.1 (2023-10-18)
+
+- (mcm1957) Standard iobroker release environment has been added.
+- (mcm1957) Some dependencies have been updated.
+
 ## 1.1.0
 
 - (TA2k) Bugfixes
