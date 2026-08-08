@@ -299,7 +299,9 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
 -->
 ### 1.1.6 (2026-08-08)
 
-- (TA2k) Reconnect flow improved
+- (TA2k) Faster reconnect after a camera reboot (detection in ~30-50s instead of ~4min)
+- (TA2k) Connection state now reflects the real reconnect instead of flipping back to true too early
+- (TA2k) Throttled the repeated event error log messages during a reboot
 
 ### 1.1.5 (2026-08-06)
 

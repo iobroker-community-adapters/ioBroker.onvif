@@ -4,17 +4,17 @@
     "version": "1.1.6",
     "news": {
       "1.1.6": {
-        "en": "Reconnect flow improved",
-        "de": "Reconnect Flow verbessert",
-        "ru": "Улучшенный поток соединения",
-        "pt": "O fluxo de reconexão melhorou",
-        "nl": "Herkoppelstroom verbeterd",
-        "fr": "Reconnecter le flux amélioré",
-        "it": "Miglioramento del flusso di connessione",
-        "es": "Aumento del flujo de reconexión",
-        "pl": "Poprawa przepływu regeneracji",
-        "uk": "Покращений потік відключення",
-        "zh-cn": "重新连接流量得到改善"
+        "en": "Faster reconnect after a camera reboot\nConnection state now reflects the real reconnect\nThrottled repeated event error log messages",
+        "de": "Schnellerer Reconnect nach Kamera-Neustart\nVerbindungsstatus spiegelt jetzt den echten Reconnect wider\nWiederholte Event-Fehlermeldungen im Log gedrosselt",
+        "ru": "Более быстрое переподключение после перезагрузки камеры\nСостояние подключения теперь отражает реальное переподключение\nОграничены повторяющиеся сообщения об ошибках событий в журнале",
+        "pt": "Reconexão mais rápida após reinicialização da câmera\nO estado da conexão agora reflete a reconexão real\nMensagens repetidas de erro de evento no log foram limitadas",
+        "nl": "Sneller opnieuw verbinden na herstart van de camera\nVerbindingsstatus weerspiegelt nu de echte herverbinding\nHerhaalde foutmeldingen van gebeurtenissen in het logboek beperkt",
+        "fr": "Reconnexion plus rapide après le redémarrage de la caméra\nL'état de la connexion reflète désormais la reconnexion réelle\nMessages d'erreur d'événement répétés limités dans le journal",
+        "it": "Riconnessione più rapida dopo il riavvio della telecamera\nLo stato della connessione ora riflette la riconnessione reale\nMessaggi di errore evento ripetuti limitati nel log",
+        "es": "Reconexión más rápida tras reiniciar la cámara\nEl estado de la conexión ahora refleja la reconexión real\nMensajes de error de eventos repetidos limitados en el registro",
+        "pl": "Szybsze ponowne połączenie po restarcie kamery\nStan połączenia odzwierciedla teraz rzeczywiste ponowne połączenie\nOgraniczono powtarzające się komunikaty o błędach zdarzeń w dzienniku",
+        "uk": "Швидше повторне підключення після перезавантаження камери\nСтан підключення тепер відображає реальне повторне підключення\nОбмежено повторювані повідомлення про помилки подій у журналі",
+        "zh-cn": "摄像头重启后更快重新连接\n连接状态现在反映真实的重新连接\n限制重复的事件错误日志消息"
       },
       "1.1.5": {
         "en": "Reconnect flow improved\nAdapter requires node.js >= 22 now",
