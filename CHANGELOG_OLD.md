@@ -1,4 +1,9 @@
 # Older changes
+## 1.1.2 (2023-12-29)
+
+- (TA2k) Catch callback error
+
+
 ## 1.1.1 (2023-10-18)
 
 - (mcm1957) Standard iobroker release environment has been added.

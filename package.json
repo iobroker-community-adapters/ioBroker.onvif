@@ -1,6 +1,6 @@
 {
   "name": "iobroker.onvif",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "Adapter for onvif cameras",
   "author": "TA2k <tombox2020@gmail.com>",
   "contributors": [

@@ -297,7 +297,7 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**-->
+### 1.1.7 (2026-08-20)-->
 
 - (mcm1957) clean release built to fix missing tagging and github release
 
@@ -321,10 +321,6 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
 ### 1.1.3 (2024-03-15)
 
 - Allow non number PTZ presets
-
-### 1.1.2 (2023-12-29)
-
-- (TA2k) Catch callback error
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

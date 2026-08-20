@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.1.6",
+    "version": "1.1.7",
     "news": {
+      "1.1.7": {
+        "en": "clean release built to fix missing tagging and github release",
+        "de": "Saubere Version erstellt, um fehlende Tags und GitHub-Releases zu beheben",
+        "ru": "Выпущена чистая версия, исправлены отсутствующие теги и релиз на GitHub.",
+        "pt": "Versão limpa criada para corrigir a falta de marcação e publicação no GitHub.",
+        "nl": "Een schone release is gebouwd om ontbrekende tags en een GitHub-release te herstellen.",
+        "fr": "Version propre créée pour corriger les problèmes de balisage et de publication sur GitHub",
+        "it": "Versione pulita creata per correggere i tag mancanti e la versione di GitHub",
+        "es": "Versión limpia creada para corregir el etiquetado faltante y la publicación en GitHub.",
+        "pl": "czyste wydanie stworzone w celu naprawy brakującego tagowania i wydania GitHub",
+        "uk": "чистий реліз, створений для виправлення відсутніх тегів та релізу на GitHub",
+        "zh-cn": "构建了一个干净的版本，修复了缺失的标签和 GitHub 发布问题。"
+      },
       "1.1.6": {
         "en": "Faster reconnect after a camera reboot\nConnection state now reflects the real reconnect\nThrottled repeated event error log messages",
         "de": "Schnellerer Reconnect nach Kamera-Neustart\nVerbindungsstatus spiegelt jetzt den echten Reconnect wider\nWiederholte Event-Fehlermeldungen im Log gedrosselt",
@@ -80,19 +93,6 @@
         "pl": "Dodano do użytku podstawowe iobrokerowe środowisko.\nNiektóre zależności zostały zaktualizowane.",
         "uk": "Додано стандартне середовище вивільнення йоброкера.\nДеякі залежності були оновлено.",
         "zh-cn": "标准简化者释放环境已经增加。.\n已经更新了一些依赖情况。."
-      },
-      "1.1.1-alpha.0": {
-        "en": "standard iobroker release environment has been added\nsome dependencies have been updated",
-        "de": "Standard iobroker Release-Umgebung wurde hinzugefügt\nEinige Abhängigkeiten wurden aktualisiert",
-        "ru": "добавлена стандартная среда релиза iobroker\nнекоторые зависимости были обновлены",
-        "pt": "padrão iobroker liberação ambiente foi adicionado\nalgumas dependências foram atualizadas",
-        "nl": "standaard iobroker vrijlating is toegevoegd\nsommige afhankelijkheid is geüpload",
-        "fr": "iobroker standard environnement de libération a été ajouté\ncertaines dépendances ont été mises à jour",
-        "it": "standard iobroker rilascio ambiente è stato aggiunto\nalcune dipendenze sono state aggiornate",
-        "es": "estándar ambiente de liberación de iobroker se ha añadido\nse han actualizado algunas dependencias",
-        "pl": "dodano do użytku standardowe iobraźnię\nniektóre zależności zostały zaktualizowane",
-        "uk": "додано стандартне середовище вивільнення iobroker\nдеякі залежності були оновлено",
-        "zh-cn": "添加了标准碘器释放环境\n已经更新了一些依赖性"
       }
     },
     "titleLang": {
