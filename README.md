@@ -297,6 +297,10 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**-->
+
+- (mcm1957) clean release built to fix missing tagging and github release
+
 ### 1.1.6 (2026-08-08)
 
 - (TA2k) Faster reconnect after a camera reboot (detection in ~30-50s instead of ~4min)
