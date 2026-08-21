@@ -297,7 +297,13 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### 1.1.7 (2026-08-20)-->
+### 1.1.8 (2026-08-21)
+
+- (TA2k) Fixed reconnect loop: the watchdog now only rebuilds on non-retryable event errors, so cameras that periodically reset the event socket ("socket hang up") are left to the onvif library's own retry instead of reconnecting every 30s
+- (TA2k) Retryable event errors are logged at debug instead of warn and no longer flip the connection state
+- (TA2k) Updated onvif to 0.8.2 and dev dependencies
+
+### 1.1.7 (2026-08-20)
 
 - (mcm1957) clean release built to fix missing tagging and github release
 

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.1.7",
+    "version": "1.1.8",
     "news": {
+      "1.1.8": {
+        "en": "Fixed reconnect loop for cameras that periodically reset the event socket\nUpdated onvif to 0.8.2",
+        "de": "Reconnect-Schleife für Kameras behoben, die den Event-Socket regelmäßig zurücksetzen\nonvif auf 0.8.2 aktualisiert",
+        "ru": "Исправлен цикл переподключения для камер, периодически сбрасывающих сокет событий\nonvif обновлён до 0.8.2",
+        "pt": "Corrigido o loop de reconexão para câmeras que redefinem periodicamente o socket de eventos\nonvif atualizado para 0.8.2",
+        "nl": "Herverbindingslus opgelost voor camera's die de event-socket periodiek resetten\nonvif bijgewerkt naar 0.8.2",
+        "fr": "Correction de la boucle de reconnexion pour les caméras qui réinitialisent périodiquement le socket d'événements\nonvif mis à jour vers 0.8.2",
+        "it": "Corretto il ciclo di riconnessione per le telecamere che reimpostano periodicamente il socket degli eventi\nonvif aggiornato alla 0.8.2",
+        "es": "Corregido el bucle de reconexión para cámaras que reinician periódicamente el socket de eventos\nonvif actualizado a 0.8.2",
+        "pl": "Naprawiono pętlę ponownego łączenia dla kamer okresowo resetujących gniazdo zdarzeń\nZaktualizowano onvif do 0.8.2",
+        "uk": "Виправлено цикл повторного підключення для камер, які періодично скидають сокет подій\nonvif оновлено до 0.8.2",
+        "zh-cn": "修复了会定期重置事件套接字的摄像头的重连循环\nonvif 更新至 0.8.2"
+      },
       "1.1.7": {
         "en": "clean release built to fix missing tagging and github release",
         "de": "Saubere Version erstellt, um fehlende Tags und GitHub-Releases zu beheben",
