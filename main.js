@@ -36,15 +36,20 @@ class Onvif extends utils.Adapter {
     // Watchdog timings. A healthy but idle camera keeps a PullMessages request open for up
     // to ~60s (the onvif library uses an 80s reply timeout), so the silent backstop must
     // stay above that to avoid rebuilding a working connection. The error-stale threshold
-    // is much shorter: it only applies once a camera has actually reported an event error,
-    // which is the reboot case and cannot be confused with a healthy idle camera.
+    // is much shorter but only applies to a dead loop (see below), not to a camera whose
+    // errors the onvif library retries on its own.
     this.CAM_CHECK_INTERVAL_MS = 30 * 1000;
     this.CAM_STALE_MS = 100 * 1000;
     this.CAM_ERROR_STALE_MS = 20 * 1000;
     // The onvif library retries a lost event loop with a 10ms-growing backoff, so it emits
     // dozens of identical eventsError within seconds while a camera reboots. Log the first
-    // one and any change of message immediately, then at most one per this window.
+    // one immediately, then at most one per this window.
     this.CAM_ERROR_LOG_THROTTLE_MS = 30 * 1000;
+    // Error codes the onvif library retries by itself (events.js retryErrorCodes). A camera
+    // that keeps producing these (e.g. "socket hang up" = ECONNRESET) is normal reconnect
+    // churn the library recovers from, not a dead loop. Only errors NOT in this list mean the
+    // pull loop stopped for good (unplugged/rebooted) and the watchdog has to rebuild.
+    this.RETRY_ERROR_CODES = ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENETUNREACH'];
     this.checkRunning = false;
     this.unloaded = false;
   }
@@ -128,20 +133,40 @@ class Onvif extends utils.Adapter {
     cam.lastActivity = Date.now();
     cam.lastError = 0;
     cam.lastErrorLog = 0;
-    cam.lastErrorMessage = null;
+    cam.lastErrorRetryable = false;
+    cam.connected = true;
+    this.setState(device.native.id + '.connection', true, true);
     cam.on('event', this.processEvent.bind(this, device));
+    // Any successful response proves the loop is alive again and restores the connection state
+    // after a non-retryable outage. lastActivity itself is updated in initDevice's rawResponse.
+    cam.on('rawResponse', () => {
+      if (!cam.connected) {
+        cam.connected = true;
+        this.setState(device.native.id + '.connection', true, true);
+      }
+    });
     cam.on('eventsError', (error) => {
       const message = error && error.message ? error.message : String(error);
       const now = Date.now();
       cam.lastError = now;
-      // Throttle the flood: log the first error and any message change at once, then at most
-      // one line per throttle window. The watchdog handles the actual reconnect.
-      if (message !== cam.lastErrorMessage || now - cam.lastErrorLog > this.CAM_ERROR_LOG_THROTTLE_MS) {
-        this.log.warn(`Event error for ${device.native.id}: ${message}`);
+      cam.lastErrorRetryable = !!(error && this.RETRY_ERROR_CODES.includes(error.code));
+      // Throttle the flood the library's ~10ms retry backoff produces. Retryable errors
+      // ("socket hang up" etc.) are normal churn the library recovers from, so keep them out
+      // of the warn log; a non-retryable error means the loop is dead and belongs in warn.
+      if (now - cam.lastErrorLog > this.CAM_ERROR_LOG_THROTTLE_MS) {
+        if (cam.lastErrorRetryable) {
+          this.log.debug(`Event churn for ${device.native.id}: ${message}`);
+        } else {
+          this.log.warn(`Event error for ${device.native.id}: ${message}`);
+        }
         cam.lastErrorLog = now;
-        cam.lastErrorMessage = message;
       }
-      this.setState(device.native.id + '.connection', false, true);
+      // Only a non-retryable error takes the connection down. Retryable churn keeps the state,
+      // the library reconnects on its own and rawResponse confirms it.
+      if (!cam.lastErrorRetryable) {
+        cam.connected = false;
+        this.setState(device.native.id + '.connection', false, true);
+      }
     });
   }
 
@@ -166,20 +191,19 @@ class Onvif extends utils.Adapter {
         const lastActivity = cam && cam.lastActivity ? cam.lastActivity : 0;
         const lastError = cam && cam.lastError ? cam.lastError : 0;
         const inactiveMs = Date.now() - lastActivity;
-        // The event loop is only healthy if its most recent request produced a response
-        // (rawResponse) after the last error. A camera that keeps erroring never advances
-        // lastActivity, so inError stays true and inactiveMs keeps growing.
+        // inError: the most recent thing on the loop was a failure, not a response.
         const inError = lastError > lastActivity;
-        // Fast path: an actively erroring camera whose last success is older than the short
-        // error threshold (reboot). Backstop: any camera silent past the long threshold,
-        // which also covers a healthy but idle camera that quietly stopped pulling.
-        if (!cam || (inError && inactiveMs > this.CAM_ERROR_STALE_MS) || inactiveMs > this.CAM_STALE_MS) {
+        // A dead loop is one the onvif library will NOT retry itself: a non-retryable error
+        // (unplugged/rebooted camera). Rebuilding a retryable-error camera ("socket hang up"
+        // churn) only fights the library's own retry and thrashes the subscription, so we
+        // leave those alone. stalledNoError catches a loop that went silent without any error.
+        const deadLoop = cam && inError && !cam.lastErrorRetryable;
+        const stalledNoError = cam && !inError && inactiveMs > this.CAM_STALE_MS;
+        if (!cam || (deadLoop && inactiveMs > this.CAM_ERROR_STALE_MS) || stalledNoError) {
           this.log.warn(`No ONVIF activity from ${deviceId} for ${Math.round(inactiveMs / 1000)}s, reconnecting`);
           await this.rebuildCamera(deviceId);
         } else {
           this.log.debug(`Camera ${deviceId} last activity ${Math.round(inactiveMs / 1000)}s ago`);
-          // Reflect the real state: connection is up only when the event loop is not erroring.
-          this.setState(deviceId + '.connection', !inError, true);
         }
       }
     } finally {
