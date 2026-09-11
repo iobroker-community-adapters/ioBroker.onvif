@@ -36,7 +36,7 @@
     "@alcalzone/release-script-plugin-license": "^5.2.2",
     "@alcalzone/release-script-plugin-manual-review": "^5.2.0",
     "@eslint/js": "^10.0.1",
-    "@iobroker/testing": "^5.3.0",
+    "@iobroker/testing": "^6.1.2",
     "@tsconfig/node22": "^22.0.6",
     "@types/node": "^22.20.1",
     "eslint": "^10.9.1",
