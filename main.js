@@ -52,6 +52,7 @@ class Onvif extends utils.Adapter {
     this.RETRY_ERROR_CODES = ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENETUNREACH'];
     this.checkRunning = false;
     this.unloaded = false;
+    this.noSnapshotLogged = new Set();
   }
 
   /**
@@ -577,10 +578,14 @@ class Onvif extends utils.Adapter {
         streamUris[profile.name].snapshotUrl = await promisify(cam.getSnapshotUri)
           .bind(cam)({ ProfileToken: profile.$.token })
           .catch((e) => {
-            this.log.warn(
-              `${cam.hostname}:${cam.port} ${profile.name} No snapshot url available. Try to get it from the stream url via ffmpeg`,
-            );
-            this.log.warn(e);
+            const camKey = `${cam.hostname}:${cam.port}`;
+            if (this.noSnapshotLogged.has(camKey)) {
+              this.log.debug(`${camKey} ${profile.name} No snapshot url available, using ffmpeg fallback`);
+            } else {
+              this.noSnapshotLogged.add(camKey);
+              this.log.info(`${camKey} No snapshot url available, using ffmpeg fallback`);
+            }
+            this.log.debug(e);
           });
         if (!snapshotUrl && streamUris[profile.name].snapshotUrl) {
           snapshotUrl = streamUris[profile.name].snapshotUrl.uri;
