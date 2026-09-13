@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "onvif",
-    "version": "1.1.8",
+    "version": "1.1.9",
     "news": {
+      "1.1.9": {
+        "en": "Reduced log noise for cameras without snapshot support (logged once as info)\nUpdated onvif to 0.8.3",
+        "de": "Log-Rauschen für Kameras ohne Snapshot-Unterstützung reduziert (einmal als Info geloggt)\nonvif auf 0.8.3 aktualisiert",
+        "ru": "Уменьшено количество логов для камер без поддержки снимков (логируется один раз как info)\nonvif обновлён до 0.8.3",
+        "pt": "Reduzido o ruído de log para câmeras sem suporte a snapshot (registrado uma vez como info)\nonvif atualizado para 0.8.3",
+        "nl": "Logruis verminderd voor camera's zonder snapshot-ondersteuning (eenmaal als info gelogd)\nonvif bijgewerkt naar 0.8.3",
+        "fr": "Réduction du bruit de journal pour les caméras sans prise en charge des instantanés (journalisé une fois en info)\nonvif mis à jour vers 0.8.3",
+        "it": "Ridotto il rumore di log per le telecamere senza supporto snapshot (registrato una volta come info)\nonvif aggiornato alla 0.8.3",
+        "es": "Reducido el ruido de registro para cámaras sin soporte de snapshot (registrado una vez como info)\nonvif actualizado a 0.8.3",
+        "pl": "Zmniejszono szum w logach dla kamer bez obsługi migawek (logowane raz jako info)\nZaktualizowano onvif do 0.8.3",
+        "uk": "Зменшено кількість логів для камер без підтримки знімків (логується один раз як info)\nonvif оновлено до 0.8.3",
+        "zh-cn": "减少了不支持快照的摄像头的日志噪音（作为 info 记录一次）\nonvif 更新至 0.8.3"
+      },
       "1.1.8": {
         "en": "Fixed reconnect loop for cameras that periodically reset the event socket\nUpdated onvif to 0.8.2",
         "de": "Reconnect-Schleife für Kameras behoben, die den Event-Socket regelmäßig zurücksetzen\nonvif auf 0.8.2 aktualisiert",
