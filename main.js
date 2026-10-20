@@ -82,12 +82,17 @@ class Onvif extends utils.Adapter {
           return cam;
         })
         .catch(async (error) => {
-          this.log.error(`Data: ${error.data} XML: ${error.xml}`);
-          this.log.error(`Error initializing device: ${error.err} device: ${JSON.stringify(device.native)}`);
-          this.log.error(
-            `You can change user and password under object and edit device or delete device under objects and restart adapter`,
-          );
-          this.log.error(error.err.stack);
+          const err = error?.err || error;
+          const code = err?.code || '';
+          const networkErrors = ['EHOSTUNREACH', 'ECONNREFUSED', 'ETIMEDOUT', 'ENETUNREACH'];
+
+          if (networkErrors.includes(code)) {
+            this.log.warn(`Device ${device.native.ip}:${device.native.port} is unreachable (${code})`);
+          } else {
+            this.log.error(`Error initializing device ${device.native.ip}:${device.native.port}: ${err}`);
+            this.log.debug(`Data: ${error?.data} XML: ${error?.xml}`);
+            this.log.debug(err?.stack || String(err));
+          }
           return null;
         });
       if (camObj) {
@@ -415,10 +420,25 @@ class Onvif extends utils.Adapter {
         let urn = '';
 
         try {
-          urn = result['Envelope']['Body'][0]['ProbeMatches'][0]['ProbeMatch'][0]['EndpointReference'][0]['Address'][0].payload;
-          xaddrs = result['Envelope']['Body'][0]['ProbeMatches'][0]['ProbeMatch'][0]['XAddrs'][0].payload;
-          let scopes = result['Envelope']['Body'][0]['ProbeMatches'][0]['ProbeMatch'][0]['Scopes'][0].payload;
-          scopes = scopes.split(' ');
+          const probeMatch = result['Envelope']['Body'][0]['ProbeMatches'][0]['ProbeMatch'][0];
+
+          urn = probeMatch['EndpointReference']?.[0]?.['Address']?.[0]?.payload || '';
+          xaddrs = probeMatch['XAddrs']?.[0]?.payload || '';
+
+          const types = probeMatch['Types']?.[0]?.payload || '';
+          const scopesPayload = probeMatch['Scopes']?.[0]?.payload || '';
+
+          const isOnvifDevice =
+            /NetworkVideoTransmitter/i.test(types) || /onvif/i.test(xaddrs) || /onvif/i.test(scopesPayload);
+
+          if (!isOnvifDevice) {
+            this.log.debug(
+              `Skip non-ONVIF WS-Discovery device ${rinfo.address}: types=${types} xaddrs=${xaddrs}`,
+            );
+            return;
+          }
+
+          const scopes = scopesPayload ? scopesPayload.split(' ') : [];
 
           try {
             for (let i = 0; i < scopes.length; i++) {
@@ -452,8 +472,9 @@ class Onvif extends utils.Adapter {
             this.log.error(error.stack);
           }
         } catch (error) {
-          this.log.warn('Skip parsing ' + JSON.stringify(rinfo) + ' xml: ' + error);
-          this.log.warn(xml);
+          this.log.debug('Skip malformed discovery reply from ' + rinfo.address + ': ' + error);
+          this.log.debug(xml);
+          return;
         }
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
         if (this.devices[rinfo.address]) {
@@ -563,7 +584,7 @@ class Onvif extends utils.Adapter {
     const presets = await promisify(cam.getPresets)
       .bind(cam)()
       .catch((e) => {
-        this.log.warn(`No presets found for ${cam.hostname}:${cam.port} ${e}`);
+        this.log.debug(`No presets found for ${cam.hostname}:${cam.port} ${e}`);
       });
     let snapshotUrl = '';
     let minorStreamUrl = '';
