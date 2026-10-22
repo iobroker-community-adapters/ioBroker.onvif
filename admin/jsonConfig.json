@@ -378,6 +378,29 @@
           "lg": 12,
           "xl": 12
         },
+        "ignoreIps": {
+          "newLine": true,
+          "type": "text",
+          "label": {
+            "en": "Ignore cameras (comma separated IPs)",
+            "de": "Kameras ignorieren (IPs kommagetrennt)",
+            "ru": "Игнорировать камеры (IP через запятую)",
+            "pt": "Ignorar câmeras (IPs separados por vírgula)",
+            "nl": "Camera's negeren (IP's gescheiden door komma's)",
+            "fr": "Ignorer les caméras (IP séparées par des virgules)",
+            "it": "Ignora telecamere (IP separati da virgola)",
+            "es": "Ignorar cámaras (IP separadas por comas)",
+            "pl": "Ignoruj kamery (adresy IP oddzielone przecinkami)",
+            "uk": "Ігнорувати камери (IP через кому)",
+            "zh-cn": "忽略摄像机（以逗号分隔的 IP）"
+          },
+          "default": "",
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
+        },
         "overwriteSnapshotPort": {
           "newLine": true,
           "type": "checkbox",

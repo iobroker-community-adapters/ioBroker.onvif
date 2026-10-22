@@ -29,6 +29,10 @@ You can perform the discovery manually in the settings. If the cameras have diff
 
 In order for a camera to be detected again, it must simply be deleted under Objects.
 
+### Ignore cameras
+
+Cameras that should not be contacted at all (e.g. with different credentials) can be entered as comma separated IP addresses in the instance settings under "Ignore cameras". These IPs are skipped by the discovery, the manual search and for cameras already created under Objects.
+
 ### Manual search
 
 Cameras can be searched for manually if Discovery does not work. To do this, an IP range and ports must be entered and executed manually. In the log you can see details about the process.
@@ -297,6 +301,10 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+
+- (GermanBluefox) Added option to ignore cameras by IP; fixed warning about missing connection object (#391)
+
 ### 1.1.9 (2026-09-13)
 
 - (TA2k) Reduced log noise: a missing snapshot url is now logged once per camera as info instead of a warning per profile

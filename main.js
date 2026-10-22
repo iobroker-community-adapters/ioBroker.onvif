@@ -32,6 +32,7 @@ class Onvif extends utils.Adapter {
     this.deviceNatives = {};
     this.devices = {};
     this.discoveredDevices = [];
+    this.ignoreIps = [];
     this.json2iob = new Json2iob(this);
     // Watchdog timings. A healthy but idle camera keeps a PullMessages request open for up
     // to ~60s (the onvif library uses an 80s reply timeout), so the silent backstop must
@@ -63,10 +64,22 @@ class Onvif extends utils.Adapter {
 
     this.subscribeStates('*');
 
+    this.ignoreIps = (this.config.ignoreIps || '')
+      .split(/[,;\s]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (this.ignoreIps.length) {
+      this.log.info(`Ignored cameras: ${this.ignoreIps.join(', ')}`);
+    }
+
     const adapterDevices = await this.getDevicesAsync();
     for (const device of adapterDevices) {
       this.log.info(`Found Adapter Device: ${device._id} ${device.common.name}`);
       this.log.debug('Device: ' + JSON.stringify(device));
+      if (this.isIgnoredIp(device.native.ip) || this.isIgnoredIp(device.native.hostname)) {
+        this.log.info(`Skip ignored camera ${device.native.ip || device.native.hostname} (${device._id})`);
+        continue;
+      }
       if (!device.native.ip) {
         this.log.error(`Device ${device.common.name} has no ip address, please delete device and rediscover the camera`);
         device.native.ip = device.native.hostname;
@@ -101,6 +114,18 @@ class Onvif extends utils.Adapter {
           type: 'channel',
           common: {
             name: 'Camera Events',
+          },
+          native: {},
+        });
+        await this.setObjectNotExistsAsync(device.native.id + '.connection', {
+          type: 'state',
+          common: {
+            name: 'Connection to camera',
+            type: 'boolean',
+            role: 'indicator.connected',
+            def: true,
+            write: false,
+            read: true,
           },
           native: {},
         });
@@ -416,8 +441,8 @@ class Onvif extends utils.Adapter {
           return;
         }
         const scopeObject = { name: '', hardware: '' };
-        let xaddrs = '';
-        let urn = '';
+        let xaddrs;
+        let urn;
 
         try {
           const probeMatch = result['Envelope']['Body'][0]['ProbeMatches'][0]['ProbeMatch'][0];
@@ -477,6 +502,10 @@ class Onvif extends utils.Adapter {
           return;
         }
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
+        if (this.isIgnoredIp(rinfo.address)) {
+          this.log.info(`Skip ignored camera ${rinfo.address}`);
+          return;
+        }
         if (this.devices[rinfo.address]) {
           this.log.info(
             `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`,
@@ -949,6 +978,10 @@ class Onvif extends utils.Adapter {
       const devices = [];
       const portArray = options.port.replace(/\s/g, '').split(',');
       for (const ip of ipRange) {
+        if (this.isIgnoredIp(ip)) {
+          this.log.info(`Skip ignored camera ${ip}`);
+          continue;
+        }
         for (const port of portArray) {
           const deviceName = await this.initDevice({
             ip: ip,
@@ -1019,6 +1052,9 @@ class Onvif extends utils.Adapter {
     //use first and last character of password
     replaced = password.charAt(0) + replaced.substring(1, replaced.length - 1) + password.charAt(password.length - 1);
     return replaced;
+  }
+  isIgnoredIp(ip) {
+    return !!ip && this.ignoreIps.includes(ip);
   }
   generateRange(startIp, endIp) {
     let startLong = this.toLong(startIp);

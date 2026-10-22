@@ -27,6 +27,10 @@ In den Einstellungen kann man die Discovery manuell ausführen. Falls die Kamera
 
 Damit eine Kamera neu erkannt wird muss sie einfach unter Objekte gelöscht werden.
 
+### Kameras ignorieren
+
+Kameras, die gar nicht angesprochen werden sollen (z.B. mit anderen Zugangsdaten), können in den Instanzeinstellungen unter "Kameras ignorieren" als kommagetrennte IP-Adressen eingetragen werden. Diese IPs werden bei der Discovery, der manuellen Suche und bei bereits unter Objekte angelegten Kameras übersprungen.
+
 ### Manuelle Suche
 
 Es können Kameras manuell gesucht werden, falls Discovery nicht funktioniert. Dazu muss eine IP Range und Ports eingegeben und manuell ausgeführt werden. Im Log sieht man Details zu dem Prozess.
