@@ -61,6 +61,16 @@ class Onvif extends utils.Adapter {
   async onReady() {
     await this.cleanOldVersion();
 
+    this.ignoredIps = new Set(
+      (this.config.ignoreIps || '')
+        .split(/[,;\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+    );
+    if (this.ignoredIps.size) {
+      this.log.info(`Ignoring cameras with IPs: ${[...this.ignoredIps].join(', ')}`);
+    }
+
     this.subscribeStates('*');
 
     const adapterDevices = await this.getDevicesAsync();
@@ -70,6 +80,14 @@ class Onvif extends utils.Adapter {
       if (!device.native.ip) {
         this.log.error(`Device ${device.common.name} has no ip address, please delete device and rediscover the camera`);
         device.native.ip = device.native.hostname;
+      }
+      if (this.isIgnored(device.native.ip) || this.isIgnored(device.native.hostname)) {
+        this.log.info(`Skip device ${device.native.ip} because it is in the ignore list`);
+        const connectionObj = await this.getObjectAsync(device.native.id + '.connection');
+        if (connectionObj) {
+          await this.setStateAsync(device.native.id + '.connection', false, true);
+        }
+        continue;
       }
       const camObj = await this.initDevice({
         ip: device.native.ip,
@@ -104,7 +122,7 @@ class Onvif extends utils.Adapter {
           },
           native: {},
         });
-        this.attachCamEvents(device, camObj);
+        await this.attachCamEvents(device, camObj);
 
         this.devices[camObj.hostname] = camObj;
         const native = await this.fetchCameraInfos(camObj, { address: device.native.ip });
@@ -130,17 +148,47 @@ class Onvif extends utils.Adapter {
   }
 
   /**
+   * Check if the IP or hostname of a camera is in the ignore list from the settings.
+   * @param {string} ip
+   * @returns {boolean}
+   */
+  isIgnored(ip) {
+    return !!ip && !!this.ignoredIps && this.ignoredIps.has(ip);
+  }
+
+  /**
+   * Create the connection state of a camera if it does not exist yet.
+   * @param {string} id device id
+   */
+  async ensureConnectionObject(id) {
+    await this.setObjectNotExistsAsync(id + '.connection', {
+      type: 'state',
+      common: {
+        name: 'Connection to camera',
+        type: 'boolean',
+        role: 'indicator.connected',
+        def: true,
+        write: false,
+        read: true,
+      },
+      native: {},
+    });
+  }
+
+  /**
    * Attach event and error listeners to a camera. Attaching the first 'event' listener
    * bootstraps the onvif pull-point subscription loop.
    * @param device object with a `native.id` property
    * @param cam onvif Cam instance
    */
-  attachCamEvents(device, cam) {
+  async attachCamEvents(device, cam) {
     cam.lastActivity = Date.now();
     cam.lastError = 0;
     cam.lastErrorLog = 0;
     cam.lastErrorRetryable = false;
     cam.connected = true;
+    // Create the connection object before any listener can write to it
+    await this.ensureConnectionObject(device.native.id);
     this.setState(device.native.id + '.connection', true, true);
     cam.on('event', this.processEvent.bind(this, device));
     // Any successful response proves the loop is alive again and restores the connection state
@@ -224,7 +272,7 @@ class Onvif extends utils.Adapter {
    */
   async rebuildCamera(deviceId) {
     const camNative = this.deviceNatives[deviceId];
-    if (!camNative) {
+    if (!camNative || this.isIgnored(camNative.ip)) {
       return;
     }
     const oldCam = this.devices[camNative.ip] || this.devices[camNative.hostname];
@@ -259,7 +307,7 @@ class Onvif extends utils.Adapter {
     }
     this.devices[newCam.hostname] = newCam;
     this.devices[camNative.ip] = newCam;
-    this.attachCamEvents({ native: camNative }, newCam);
+    await this.attachCamEvents({ native: camNative }, newCam);
     this.setStateAsync(deviceId + '.connection', true, true);
     this.log.info(`Reconnected to ${deviceId}`);
   }
@@ -416,8 +464,8 @@ class Onvif extends utils.Adapter {
           return;
         }
         const scopeObject = { name: '', hardware: '' };
-        let xaddrs = '';
-        let urn = '';
+        let xaddrs;
+        let urn;
 
         try {
           const probeMatch = result['Envelope']['Body'][0]['ProbeMatches'][0]['ProbeMatch'][0];
@@ -477,6 +525,10 @@ class Onvif extends utils.Adapter {
           return;
         }
         this.log.info(`Discovery Reply from ${rinfo.address} (${scopeObject.name}) (${scopeObject.hardware}) (${xaddrs}) (${urn})`);
+        if (this.isIgnored(rinfo.address)) {
+          this.log.info(`Skip device ${rinfo.address} because it is in the ignore list`);
+          return;
+        }
         if (this.devices[rinfo.address]) {
           this.log.info(
             `Skip device ${rinfo.address} because it is already configured via iobroker object. Delete the device under objects for reconfigure.`,
@@ -499,7 +551,7 @@ class Onvif extends utils.Adapter {
             this.deviceNatives[native.id] = native;
             this.discoveredDevices.push(native.name);
             this.devices[cam.hostname] = cam;
-            this.attachCamEvents({ native: native }, cam);
+            await this.attachCamEvents({ native: native }, cam);
           })
           .catch((error) => {
             this.log.error(
@@ -751,18 +803,7 @@ class Onvif extends utils.Adapter {
       },
       native: {},
     });
-    await this.setObjectNotExistsAsync(id + '.connection', {
-      type: 'state',
-      common: {
-        name: 'Connection to camera',
-        type: 'boolean',
-        role: 'indicator.connected',
-        def: true,
-        write: false,
-        read: true,
-      },
-      native: {},
-    });
+    await this.ensureConnectionObject(id);
     await this.setStateAsync(id + '.connection', true, true);
 
     const remoteArray = [
@@ -949,6 +990,10 @@ class Onvif extends utils.Adapter {
       const devices = [];
       const portArray = options.port.replace(/\s/g, '').split(',');
       for (const ip of ipRange) {
+        if (this.isIgnored(ip)) {
+          this.log.info(`Skip device ${ip} because it is in the ignore list`);
+          continue;
+        }
         for (const port of portArray) {
           const deviceName = await this.initDevice({
             ip: ip,
@@ -966,7 +1011,7 @@ class Onvif extends utils.Adapter {
               const native = await this.fetchCameraInfos(cam, { address: cam.ip });
               this.deviceNatives[native.id] = native;
               this.devices[cam.hostname] = cam;
-              this.attachCamEvents({ native: native }, cam);
+              await this.attachCamEvents({ native: native }, cam);
 
               return native.name;
             })
