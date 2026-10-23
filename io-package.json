@@ -243,7 +243,8 @@
     "overwriteSnapshotPort": false,
     "serverPort": 8095,
     "overwritePort": null,
-    "overwriteUrl": null
+    "overwriteUrl": null,
+    "ignoreIps": ""
   },
   "objects": [],
   "instanceObjects": []

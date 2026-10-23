@@ -75,6 +75,42 @@
       "lg": 3,
       "xl": 3
     },
+    "ignoreIps": {
+      "type": "text",
+      "newLine": true,
+      "label": {
+        "en": "Ignore cameras with these IPs (comma separated)",
+        "de": "Kameras mit diesen IPs ignorieren (kommagetrennt)",
+        "ru": "Игнорировать камеры с этими IP (через запятую)",
+        "pt": "Ignorar câmeras com estes IPs (separados por vírgula)",
+        "nl": "Camera's met deze IP's negeren (kommagescheiden)",
+        "fr": "Ignorer les caméras avec ces IP (séparées par des virgules)",
+        "it": "Ignora le telecamere con questi IP (separati da virgola)",
+        "es": "Ignorar cámaras con estas IP (separadas por comas)",
+        "pl": "Ignoruj kamery z tymi adresami IP (oddzielone przecinkami)",
+        "uk": "Ігнорувати камери з цими IP (через кому)",
+        "zh-cn": "忽略这些 IP 的摄像头(逗号分隔)"
+      },
+      "help": {
+        "en": "Applies to discovery, manual search and already created cameras",
+        "de": "Gilt für die automatische Suche, die manuelle Suche und bereits angelegte Kameras",
+        "ru": "Применяется к автоматическому поиску, ручному поиску и уже созданным камерам",
+        "pt": "Aplica-se à descoberta, à pesquisa manual e às câmeras já criadas",
+        "nl": "Geldt voor automatische detectie, handmatig zoeken en reeds aangemaakte camera's",
+        "fr": "S'applique à la découverte, à la recherche manuelle et aux caméras déjà créées",
+        "it": "Si applica al rilevamento, alla ricerca manuale e alle telecamere già create",
+        "es": "Se aplica al descubrimiento, a la búsqueda manual y a las cámaras ya creadas",
+        "pl": "Dotyczy automatycznego wykrywania, ręcznego wyszukiwania i już utworzonych kamer",
+        "uk": "Застосовується до автоматичного пошуку, ручного пошуку та вже створених камер",
+        "zh-cn": "适用于自动发现、手动搜索和已创建的摄像头"
+      },
+      "default": "",
+      "xs": 12,
+      "sm": 12,
+      "md": 6,
+      "lg": 6,
+      "xl": 6
+    },
     "_discover": {
       "newLine": true,
       "variant": "contained",
