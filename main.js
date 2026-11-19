@@ -43,7 +43,8 @@ Commands (sendTo onvif.0):
   of the JPEG, which arrives as {type: "Buffer", data: [bytes 0-255]} (in a script: Buffer.from(result.data)).
   From the snapshot URL of the camera, or with ffmpeg from the RTSP stream if it has none or "high resolution" is
   set (up to 15 s). No answer at all for an unknown id, a camera that is not connected or when it gives no picture.
-- getSnapshot {id}: the same as {img: {rawImage: <Buffer>}}.
+- getSnapshot {id, base64?: boolean}: the same as {img: {rawImage: <Buffer as above>}}; with base64: true as
+  {img: {base64: "<the JPEG as base64>"}} instead (smaller and easier to use, e.g. as data:image/jpeg;base64,...).
 - help: this text and the list of commands with their write flag.
 - discover {user, password}, manualSearch {startIp, endIp, port, user, password}: for the settings, not for
   agents (they log in to the cameras they find and create their devices).
@@ -1296,7 +1297,9 @@ class Onvif extends utils.Adapter {
         }
         const snapshot = await this.getSnapshot(obj.message.id);
         if (snapshot) {
-          this.sendTo(obj.from, obj.command, { img: { rawImage: snapshot } }, obj.callback);
+          // a Buffer arrives as {type: 'Buffer', data: [...]}: base64 on request is easier to use
+          const img = obj.message.base64 ? { base64: Buffer.from(snapshot).toString('base64') } : { rawImage: snapshot };
+          this.sendTo(obj.from, obj.command, { img }, obj.callback);
         }
       }
     }
@@ -1322,7 +1325,8 @@ class Onvif extends utils.Adapter {
           return;
         }
         const cam = this.devices[deviceObject.native.ip];
-        if (command === 'Refresh') {
+        // the state is remote.Refresh, the README called it remote.refresh: accept both
+        if (command && command.toLowerCase() === 'refresh') {
           if (!cam) {
             this.log.warn('No camera found for ' + deviceId + ' with ip ' + deviceObject.native.ip);
             return;
