@@ -77,6 +77,10 @@ sendTo('onvif.0', 'snapshot', '192_168_178_100_80', (result) => {
 });
 ```
 
+The message "help" (`sendTo('onvif.0', 'help', {}, result => ...)`) answers `{ help, commands }`: a description of all
+messages and states for AI agents (e.g. ioBroker.pi-agent) and script authors, and the list of all commands, each with
+`write: true` if it has an effect beyond returning information.
+
 ## Motion message to Telegram
 
 ```javascript
@@ -307,6 +311,7 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
 - (rug1024) Fixed HTTP 500 for concurrent snapshot requests to the same camera
 - (GermanBluefox) Added ignore list for camera IPs (#391)
 - (GermanBluefox) Fixed warning about missing connection object (#391)
+- (GermanBluefox) Added the message "help": a description of all messages for AI agents (e.g. pi-agent), and `common.supportedMessages.help`
 
 ### 1.1.9 (2026-09-13)
 
