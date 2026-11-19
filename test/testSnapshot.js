@@ -234,6 +234,30 @@ describe('Snapshot concurrency and freshness', () => {
     assert.deepEqual(await adapter.getSnapshot('c3'), image);
   });
 
+  it('answers getSnapshot with the Buffer, or with base64 on request', async () => {
+    const { adapter } = setup();
+    const answers = [];
+    adapter.sendTo = (_from, _command, message) => answers.push(message);
+    await adapter.onMessage({ command: 'getSnapshot', message: { id: 'c3' }, from: 'x', callback: {} });
+    assert.equal(answers[0].img.rawImage, image);
+    await adapter.onMessage({ command: 'getSnapshot', message: { id: 'c3', base64: true }, from: 'x', callback: {} });
+    assert.equal(answers[1].img.base64, image.toString('base64'));
+    assert.equal(answers[1].img.rawImage, undefined);
+  });
+
+  it('refreshes the infos for remote.Refresh and remote.refresh', async () => {
+    const { adapter } = setup();
+    const cam = {};
+    const refreshed = [];
+    adapter.getObjectAsync = async () => ({ native: { ip: '192.168.1.5' } });
+    adapter.devices = { '192.168.1.5': cam };
+    adapter.fetchCameraInfos = (c, { address }) => refreshed.push([c, address]);
+    await adapter.onStateChange('onvif.0.192_168_1_5_80.remote.Refresh', { val: true, ack: false });
+    await adapter.onStateChange('onvif.0.192_168_1_5_80.remote.refresh', { val: true, ack: false });
+    assert.equal(refreshed.length, 2);
+    assert.ok(refreshed.every(([c, address]) => c === cam && address === '192.168.1.5'));
+  });
+
   it('serves concurrent HTTP clients successfully and retains real failure/404 responses', async () => {
     let fail = false;
     const { adapter, calls, advance } = setup(async () => {

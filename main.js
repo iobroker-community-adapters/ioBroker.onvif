@@ -15,6 +15,60 @@ const Discovery = require('onvif').Discovery;
 const { promisify } = require('node:util');
 const http = require('node:http');
 
+/**
+ * The commands onMessage answers, for the answer of `help`; `write`: the command has an effect beyond returning
+ * information. Keep it in sync with onMessage and HELP.
+ */
+const COMMANDS = [
+  { command: 'help', write: false },
+  { command: 'snapshot', write: false },
+  { command: 'getSnapshot', write: false },
+  // log in to the found cameras and create their devices
+  { command: 'discover', write: true },
+  { command: 'manualSearch', write: true },
+];
+
+/** The answer of `help`, written for an AI agent (e.g. ioBroker.pi-agent) and for script authors */
+const HELP = `ioBroker.onvif: connects ONVIF IP cameras. It finds them (discovery at the start or a manual search), logs
+in with the user and password of the settings, creates one device per camera with its infos, stream and snapshot
+URLs, writes the events of the camera (motion, tampering ...) into states, takes snapshots and moves PTZ cameras
+to presets. An agent can take a snapshot of a camera to look at it, read the events and move a PTZ camera.
+
+Cameras: the devices onvif.0.<id>; <id> = host and port with "_" instead of ".", e.g. 192_168_178_100_80; the name
+of the device is manufacturer, model and host:port. Only cameras the adapter could log in to since its start give
+snapshots; onvif.0.<id>.connection shows whether a camera answers.
+
+Commands (sendTo onvif.0):
+- snapshot "<id>" (the message is the id itself, a string): the current picture of the camera as a Node.js Buffer
+  of the JPEG, which arrives as {type: "Buffer", data: [bytes 0-255]} (in a script: Buffer.from(result.data)).
+  From the snapshot URL of the camera, or with ffmpeg from the RTSP stream if it has none or "high resolution" is
+  set (up to 15 s). No answer at all for an unknown id, a camera that is not connected or when it gives no picture.
+- getSnapshot {id, base64?: boolean}: the same as {img: {rawImage: <Buffer as above>}}; with base64: true as
+  {img: {base64: "<the JPEG as base64>"}} instead (smaller and easier to use, e.g. as data:image/jpeg;base64,...).
+- help: this text and the list of commands with their write flag.
+- discover {user, password}, manualSearch {startIp, endIp, port, user, password}: for the settings, not for
+  agents (they log in to the cameras they find and create their devices).
+
+States (onvif.0.<id>.*):
+- events.<topic>: the events of the camera as it sends them, e.g. events.RuleEngine/CellMotionDetector/Motion
+  (true while there is motion), events.VideoSource/MotionAlarm; a state appears when the event came once.
+- connection: the camera answers.
+- infos.*: device information, profiles, presets (infos.presets), stream URIs (infos.streamUris.<profile>.
+  snapshotUrl.uri / live_stream_tcp.uri), read at the start or with remote.Refresh.
+- remote.gotoPreset (string: the token of a preset, e.g. "1" or "001"; infos.presets.<name> holds the tokens):
+  moves a PTZ camera to that preset.
+  remote.gotoHomePosition (true): moves it to its home position. remote.Refresh (true): reads the infos again.
+  remote.snapshot (true): takes a snapshot into onvif.0.<id>.snapshot as "data:image/jpg;base64,...".
+
+How to talk to the user:
+- Name a camera by the name of its device (or the room it is in), not by its ID; if the user's words fit several
+  cameras or none, ask which one.
+- Look at a snapshot and say what it shows: people, vehicles, animals, an open door or gate, packages, light and
+  weather; say when it is too dark or blurred to tell. Get a new one for a question about now.
+- Pictures of cameras are private: do not send them to other people (messenger, e-mail) or to another adapter
+  unless the user asked for exactly that.
+- Moving a PTZ camera (gotoPreset, gotoHomePosition): only on the user's request; say where it points afterwards.`;
+
 class Onvif extends utils.Adapter {
   /**
    * @param {Partial<utils.AdapterOptions>} [options={}]
@@ -1177,6 +1231,10 @@ class Onvif extends utils.Adapter {
     }
   }
   async onMessage(obj) {
+    if (typeof obj === 'object' && obj.command === 'help') {
+      obj.callback && this.sendTo(obj.from, obj.command, { help: HELP, commands: COMMANDS }, obj.callback);
+      return;
+    }
     if (typeof obj === 'object' && obj.message) {
       if (obj.command === 'send') {
         // e.g. send email or pushover or whatever
@@ -1239,7 +1297,9 @@ class Onvif extends utils.Adapter {
         }
         const snapshot = await this.getSnapshot(obj.message.id);
         if (snapshot) {
-          this.sendTo(obj.from, obj.command, { img: { rawImage: snapshot } }, obj.callback);
+          // a Buffer arrives as {type: 'Buffer', data: [...]}: base64 on request is easier to use
+          const img = obj.message.base64 ? { base64: Buffer.from(snapshot).toString('base64') } : { rawImage: snapshot };
+          this.sendTo(obj.from, obj.command, { img }, obj.callback);
         }
       }
     }
@@ -1265,7 +1325,8 @@ class Onvif extends utils.Adapter {
           return;
         }
         const cam = this.devices[deviceObject.native.ip];
-        if (command === 'Refresh') {
+        // the state is remote.Refresh, the README called it remote.refresh: accept both
+        if (command && command.toLowerCase() === 'refresh') {
           if (!cam) {
             this.log.warn('No camera found for ' + deviceId + ' with ip ' + deviceObject.native.ip);
             return;
