@@ -50,12 +50,16 @@ function askHelp() {
   });
 }
 
-/** The commands onMessage answers: `obj.command === '...'`, without "send", which does nothing and answers nothing */
+/**
+ * The commands onMessage answers: `obj.command === '...'`, without "send", which does nothing and answers nothing;
+ * snapshot is there twice (the catalog form with an object, the old one with a string)
+ */
 function commandsOfMain() {
   const start = source.indexOf('async onMessage(');
   const end = source.indexOf('async onStateChange(', start);
   assert.ok(start > 0 && end > start, 'onMessage found');
-  return [...source.slice(start, end).matchAll(/obj\.command === '([^']+)'/g)].map((m) => m[1]).filter((c) => c !== 'send');
+  const names = [...source.slice(start, end).matchAll(/obj\.command === '([^']+)'/g)].map((m) => m[1]);
+  return [...new Set(names)].filter((c) => c !== 'send');
 }
 
 describe('help', () => {
@@ -73,12 +77,23 @@ describe('help', () => {
       assert.equal(typeof write, 'boolean', command);
       assert.ok(help.includes(command), command);
     }
-    // only discover and manualSearch create devices
+    // discover and manualSearch create devices, gotoPreset moves a camera
     // the answer comes from the context of the vm: copy it into an array of this one
     const writing = [...commands.filter((c) => c.write).map((c) => c.command)];
-    assert.deepEqual(writing.sort(), ['discover', 'manualSearch']);
+    assert.deepEqual(writing.sort(), ['discover', 'gotoPreset', 'manualSearch']);
     assert.ok(help.includes('sendTo onvif.0'));
     assert.ok(help.includes('How to talk to the user:'));
+  });
+
+  it('marks the commands of the shared catalog with standard', async () => {
+    const { commands } = await askHelp();
+    const marked = Object.fromEntries(commands.filter((c) => c.standard).map((c) => [c.command, c.standard]));
+    assert.deepEqual(marked, {
+      getCameras: 'camera.getCameras',
+      snapshot: 'camera.snapshot',
+      getPresets: 'camera.getPresets',
+      gotoPreset: 'camera.gotoPreset',
+    });
   });
 
   it('keeps the lines short', async () => {

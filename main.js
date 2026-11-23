@@ -17,12 +17,17 @@ const http = require('node:http');
 
 /**
  * The commands onMessage answers, for the answer of `help`; `write`: the command has an effect beyond returning
- * information. Keep it in sync with onMessage and HELP.
+ * information; `standard`: the command follows the shared catalog of camera commands (HELP.md of ioBroker.assistant).
+ * Keep it in sync with onMessage and HELP.
  */
 const COMMANDS = [
   { command: 'help', write: false },
-  { command: 'snapshot', write: false },
+  { command: 'getCameras', write: false, standard: 'camera.getCameras' },
+  { command: 'snapshot', write: false, standard: 'camera.snapshot' },
   { command: 'getSnapshot', write: false },
+  { command: 'getPresets', write: false, standard: 'camera.getPresets' },
+  // moves a PTZ camera
+  { command: 'gotoPreset', write: true, standard: 'camera.gotoPreset' },
   // log in to the found cameras and create their devices
   { command: 'discover', write: true },
   { command: 'manualSearch', write: true },
@@ -33,19 +38,33 @@ const HELP = `ioBroker.onvif: connects ONVIF IP cameras. It finds them (discover
 in with the user and password of the settings, creates one device per camera with its infos, stream and snapshot
 URLs, writes the events of the camera (motion, tampering ...) into states, takes snapshots and moves PTZ cameras
 to presets. An agent can take a snapshot of a camera to look at it, read the events and move a PTZ camera.
+getCameras, snapshot {camera}, getPresets and gotoPreset are the commands of the shared catalog of camera commands
+(standard camera.<command>): the same names, parameters and answers as in other camera adapters. Their errors:
+{error, reason}; reason BAD_REQUEST (a parameter is missing), NOT_FOUND or AMBIGUOUS with candidates (the names that
+fit), NOT_CONNECTED (the camera does not answer or gives no picture). camera = the id or the name of the device,
+compared without case; an exact match wins over a part of a name.
 
 Cameras: the devices onvif.0.<id>; <id> = host and port with "_" instead of ".", e.g. 192_168_178_100_80; the name
 of the device is manufacturer, model and host:port. Only cameras the adapter could log in to since its start give
 snapshots; onvif.0.<id>.connection shows whether a camera answers.
 
 Commands (sendTo onvif.0):
+- getCameras: the cameras: {cameras: [{id, name, online}]}; id = the device id, name = the name of the device,
+  online = the camera answers and gives snapshots.
+- snapshot {camera} (the message is an object): the current picture as the shared catalog gives it: {data,
+  contentType: "image/jpeg"}; data = the JPEG as base64 (no "data:" prefix). width, height and fileName of the
+  catalog are not supported (the picture comes in the size of the camera). Up to 15 s with ffmpeg.
+- getPresets {camera}: the presets of a PTZ camera as the adapter read them (infos.presets): {presets: [{id, name}]},
+  id = the token. [] for a camera without presets.
+- gotoPreset {camera, preset}: moves a PTZ camera to a preset (its name or token; without known presets the token
+  as given) and answers {ok: true} when the camera took the command.
 - snapshot "<id>" (the message is the id itself, a string): the current picture of the camera as a Node.js Buffer
   of the JPEG, which arrives as {type: "Buffer", data: [bytes 0-255]} (in a script: Buffer.from(result.data)).
   From the snapshot URL of the camera, or with ffmpeg from the RTSP stream if it has none or "high resolution" is
   set (up to 15 s). No answer at all for an unknown id, a camera that is not connected or when it gives no picture.
 - getSnapshot {id, base64?: boolean}: the same as {img: {rawImage: <Buffer as above>}}; with base64: true as
   {img: {base64: "<the JPEG as base64>"}} instead (smaller and easier to use, e.g. as data:image/jpeg;base64,...).
-- help: this text and the list of commands with their write flag.
+- help: this text and the list of commands with their write flag (and standard for the commands of the catalog).
 - discover {user, password}, manualSearch {startIp, endIp, port, user, password}: for the settings, not for
   agents (they log in to the cameras they find and create their devices).
 
@@ -67,7 +86,40 @@ How to talk to the user:
   weather; say when it is too dark or blurred to tell. Get a new one for a question about now.
 - Pictures of cameras are private: do not send them to other people (messenger, e-mail) or to another adapter
   unless the user asked for exactly that.
-- Moving a PTZ camera (gotoPreset, gotoHomePosition): only on the user's request; say where it points afterwards.`;
+- Moving a PTZ camera (gotoPreset, remote.gotoPreset, gotoHomePosition): only on the user's request; say where it
+  points afterwards.`;
+
+/**
+ * Find what the caller means (shared catalog, rule 5): by id or name without case; an exact match wins over a part of
+ * a name, and several matches are refused instead of guessed.
+ * @template {{id: string, name: string}} T
+ * @param {T[]} items the cameras or presets
+ * @param {unknown} wanted the parameter of the message
+ * @param {string} kind "camera" or "preset", the name of the parameter
+ * @returns {T | {error: string, reason: string, candidates?: string[]}}
+ */
+function findItem(items, wanted, kind) {
+  const text = typeof wanted === 'number' ? String(wanted) : typeof wanted === 'string' ? wanted.trim() : '';
+  if (!text) {
+    return { error: `The parameter "${kind}" is missing`, reason: 'BAD_REQUEST' };
+  }
+  const exactId = items.find((item) => item.id === text);
+  if (exactId) {
+    return exactId;
+  }
+  const lower = text.toLowerCase();
+  const exact = items.filter((item) => item.id.toLowerCase() === lower || item.name.toLowerCase() === lower);
+  const fits = exact.length
+    ? exact
+    : items.filter((item) => item.id.toLowerCase().includes(lower) || item.name.toLowerCase().includes(lower));
+  if (fits.length === 1) {
+    return fits[0];
+  }
+  if (fits.length > 1) {
+    return { error: `"${text}" fits several, which ${kind}?`, reason: 'AMBIGUOUS', candidates: fits.map((item) => item.name) };
+  }
+  return { error: `No ${kind} "${text}"`, reason: 'NOT_FOUND', candidates: items.map((item) => item.name) };
+}
 
 class Onvif extends utils.Adapter {
   /**
@@ -1230,9 +1282,115 @@ class Onvif extends utils.Adapter {
       callback();
     }
   }
+  /**
+   * The cameras for getCameras of the shared catalog: the devices, online = the camera answers and gives snapshots
+   * @returns {Promise<{id: string, name: string, online: boolean}[]>}
+   */
+  async standardCameras() {
+    const devices = (await this.getDevicesAsync()) || [];
+    const connections = (await this.getStatesAsync('*.connection')) || {};
+    return devices.map((device) => {
+      const id = device._id.substring(this.namespace.length + 1);
+      const name = device.common && device.common.name;
+      const text = name && typeof name === 'object' ? name.en || Object.values(name)[0] : name;
+      const connection = connections[`${this.namespace}.${id}.connection`];
+      return { id, name: text || id, online: !!(this.deviceNatives[id] && connection && connection.val === true) };
+    });
+  }
+
+  /**
+   * The presets of a camera as the adapter read them into infos.presets.<name> (value = token)
+   * @param {string} id the device id
+   * @returns {Promise<{id: string, name: string}[]>}
+   */
+  async standardPresets(id) {
+    const prefix = `${this.namespace}.${id}.infos.presets.`;
+    const states = (await this.getStatesAsync(`${id}.infos.presets.*`)) || {};
+    return Object.keys(states)
+      .filter((sid) => states[sid] && states[sid].val !== null && states[sid].val !== undefined && states[sid].val !== '')
+      .sort()
+      .map((sid) => ({ id: String(states[sid].val), name: sid.substring(prefix.length) }));
+  }
+
+  /**
+   * The commands of the shared catalog (family camera): getCameras, snapshot {camera}, getPresets, gotoPreset
+   * @param {string} command
+   * @param {any} message
+   * @returns {Promise<object>} the answer, {error, reason?, candidates?} on failure
+   */
+  async onStandardMessage(command, message) {
+    const request = message && typeof message === 'object' ? message : {};
+    try {
+      const cameras = await this.standardCameras();
+      if (command === 'getCameras') {
+        return { cameras };
+      }
+      const camera = findItem(cameras, request.camera, 'camera');
+      if ('error' in camera) {
+        return camera;
+      }
+      const { id, name } = camera;
+      if (command === 'getPresets') {
+        return { presets: await this.standardPresets(id) };
+      }
+      const native = this.deviceNatives[id];
+      if (!native) {
+        return { error: `Camera "${name}" is not connected`, reason: 'NOT_CONNECTED' };
+      }
+      if (command === 'snapshot') {
+        const image = await this.getSnapshot(id).catch((e) => {
+          throw Object.assign(new Error(`No picture from camera "${name}": ${(e && e.message) || e}`), { reason: 'NOT_CONNECTED' });
+        });
+        if (!image || !image.length) {
+          return { error: `No picture from camera "${name}"`, reason: 'NOT_CONNECTED' };
+        }
+        return { data: Buffer.from(image).toString('base64'), contentType: 'image/jpeg' };
+      }
+      // gotoPreset: by the name or the token of a preset; without known presets the token as it is (as remote.gotoPreset)
+      const presets = await this.standardPresets(id);
+      const preset = findItem(presets, request.preset, 'preset');
+      let token;
+      if (!('error' in preset)) {
+        token = preset.id;
+      } else if (!presets.length && preset.reason === 'NOT_FOUND') {
+        token = String(request.preset).trim();
+      } else {
+        return preset;
+      }
+      const cam = this.devices[native.ip] || this.devices[native.hostname];
+      if (!cam) {
+        return { error: `Camera "${name}" is not connected`, reason: 'NOT_CONNECTED' };
+      }
+      await promisify(cam.gotoPreset)
+        .bind(cam)({ preset: token })
+        .catch((e) => {
+          throw Object.assign(new Error(`Camera "${name}" did not move: ${(e && e.message) || e}`), { reason: 'NOT_CONNECTED' });
+        });
+      this.log.info(`Moved ${id} to the preset ${token}`);
+      return { ok: true };
+    } catch (e) {
+      return e && e.reason ? { error: e.message, reason: e.reason } : { error: (e && e.message) || String(e) };
+    }
+  }
+
   async onMessage(obj) {
     if (typeof obj === 'object' && obj.command === 'help') {
       obj.callback && this.sendTo(obj.from, obj.command, { help: HELP, commands: COMMANDS }, obj.callback);
+      return;
+    }
+    // The commands of the shared catalog (family camera). snapshot with the id as a string is the old command below.
+    if (
+      typeof obj === 'object' &&
+      (obj.command === 'getCameras' ||
+        obj.command === 'getPresets' ||
+        obj.command === 'gotoPreset' ||
+        (obj.command === 'snapshot' && typeof obj.message !== 'string'))
+    ) {
+      // a snapshot without a callback is of no use; gotoPreset moves the camera also without one
+      if (obj.callback || obj.command === 'gotoPreset') {
+        const answer = await this.onStandardMessage(obj.command, obj.message);
+        obj.callback && this.sendTo(obj.from, obj.command, answer, obj.callback);
+      }
       return;
     }
     if (typeof obj === 'object' && obj.message) {

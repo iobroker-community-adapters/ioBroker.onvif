@@ -85,6 +85,10 @@ The message "help" (`sendTo('onvif.0', 'help', {}, result => ...)`) answers `{ h
 messages and states for AI agents (e.g. ioBroker.pi-agent) and script authors, and the list of all commands, each with
 `write: true` if it has an effect beyond returning information.
 
+`getCameras`, `snapshot { camera }` (an object; with the id as a string it is the old command above), `getPresets
+{ camera }` and `gotoPreset { camera, preset }` follow the commands that camera adapters share: the camera by its id or
+the name of its device without case, the picture as `{ data, contentType }` (base64), errors as `{ error, reason }`.
+
 ## Motion message to Telegram
 
 ```javascript
@@ -318,6 +322,7 @@ on('onvif.0.192_168_178_100_80.events.RuleEngine/CellMotionDetector/Motion', (ob
 - (GermanBluefox) Added the message "help": a description of all messages for AI agents (e.g. pi-agent), and `common.supportedMessages.help`
 - (GermanBluefox) Fixed: writing `remote.refresh` (as the README called it) now reads the infos again like `remote.Refresh`
 - (GermanBluefox) Added the option `base64: true` to the message "getSnapshot": the picture comes as a base64 string instead of a serialized Buffer
+- (GermanBluefox) Added the standard commands of the shared catalog: camera.getCameras, camera.snapshot (`snapshot {camera}`), camera.getPresets, camera.gotoPreset
 
 ### 1.1.9 (2026-09-13)
 
